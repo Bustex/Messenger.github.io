@@ -17,6 +17,7 @@
             --accent-purple: #8A2BE2;
             --online-green: #00FF88;
             --error-red: #FF4444;
+            --success-green: #00CC66;
         }
 
         * {
@@ -54,6 +55,18 @@
             100% { box-shadow: 0 0 0 0 rgba(0, 102, 255, 0); }
         }
 
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(0, 102, 255, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 102, 255, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(0, 102, 255, 0.5); }
+        }
+
         /* Стили для экранов аутентификации */
         .auth-container {
             width: 100%;
@@ -63,57 +76,126 @@
             align-items: center;
             padding: 40px;
             background: linear-gradient(135deg, var(--dark-blue) 0%, var(--card-blue) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(0, 212, 255, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-icon:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-icon:nth-child(2) {
+            top: 20%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+
+        .floating-icon:nth-child(3) {
+            bottom: 15%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        .floating-icon:nth-child(4) {
+            bottom: 25%;
+            right: 10%;
+            animation-delay: 3s;
         }
 
         .logo {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 10px;
-            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue), var(--accent-purple));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
+            animation: glow 3s ease-in-out infinite;
         }
 
         .tagline {
             color: var(--text-gray);
             margin-bottom: 40px;
             font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
         }
 
         .auth-form {
             background: rgba(26, 31, 62, 0.9);
             padding: 40px;
-            border-radius: 16px;
+            border-radius: 20px;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .auth-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .auth-form h2 {
             color: var(--text-white);
             margin-bottom: 30px;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            position: relative;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: var(--text-gray);
             font-weight: 500;
+            font-size: 1rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 20px;
             background: var(--input-blue);
             border: 2px solid rgba(0, 212, 255, 0.3);
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             color: var(--text-white);
             transition: all 0.3s;
@@ -123,29 +205,125 @@
             border-color: var(--primary-blue);
             outline: none;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 255, 0.2);
+        }
+
+        .form-group input.valid {
+            border-color: var(--success-green);
+        }
+
+        .form-group input.invalid {
+            border-color: var(--error-red);
+        }
+
+        .password-strength {
+            margin-top: 10px;
+            height: 5px;
+            border-radius: 5px;
+            background: var(--input-blue);
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+
+        .password-strength.weak .password-strength-bar {
+            background: var(--error-red);
+            width: 33%;
+        }
+
+        .password-strength.medium .password-strength-bar {
+            background: orange;
+            width: 66%;
+        }
+
+        .password-strength.strong .password-strength-bar {
+            background: var(--success-green);
+            width: 100%;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .requirement i {
+            margin-right: 5px;
+            font-size: 0.8rem;
+        }
+
+        .requirement.valid {
+            color: var(--success-green);
+        }
+
+        .requirement.invalid {
+            color: var(--error-red);
         }
 
         .btn {
             background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
             color: var(--text-white);
             border: none;
-            padding: 15px 24px;
-            border-radius: 10px;
+            padding: 16px 24px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
             margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s;
+        }
+
+        .btn:hover:before {
+            left: 100%;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(0, 102, 255, 0.4);
         }
 
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: var(--input-blue);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover:before {
+            left: -100%;
+        }
+
         .auth-switch {
-            margin-top: 20px;
+            margin-top: 25px;
             text-align: center;
             color: var(--text-gray);
         }
@@ -154,13 +332,47 @@
             color: var(--secondary-blue);
             text-decoration: none;
             font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .auth-switch a:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary-blue);
+            transition: width 0.3s;
+        }
+
+        .auth-switch a:hover:after {
+            width: 100%;
         }
 
         .error-message {
             color: var(--error-red);
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 8px;
             display: none;
+            align-items: center;
+        }
+
+        .error-message i {
+            margin-right: 5px;
+        }
+
+        .success-message {
+            color: var(--success-green);
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            align-items: center;
+        }
+
+        .success-message i {
+            margin-right: 5px;
         }
 
         /* Основной интерфейс мессенджера */
@@ -685,20 +897,40 @@
 <body>
     <div class="container" id="auth-container">
         <div class="auth-container">
+            <!-- Декоративные элементы -->
+            <div class="floating-icon">
+                <i class="fas fa-comment"></i>
+            </div>
+            <div class="floating-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="floating-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <div class="floating-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            
             <div class="logo">WAVECHAT</div>
-            <div class="tagline">Все данные сохраняются в базе</div>
+            <div class="tagline">Общайтесь в реальном времени с полной сохранностью истории в базе данных. Безопасно, быстро, удобно.</div>
             
             <div class="auth-form" id="login-form">
                 <h2>Вход в аккаунт</h2>
                 <div class="form-group">
                     <label for="login-username">Имя пользователя</label>
                     <input type="text" id="login-username" placeholder="Введите ваш username">
+                    <div class="error-message" id="login-username-error">
+                        <i class="fas fa-exclamation-circle"></i> Пожалуйста, введите имя пользователя
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="login-password">Пароль</label>
                     <input type="password" id="login-password" placeholder="Введите ваш пароль">
+                    <div class="error-message" id="login-password-error">
+                        <i class="fas fa-exclamation-circle"></i> Пожалуйста, введите пароль
+                    </div>
                 </div>
-                <button class="btn" id="login-btn">Войти</button>
+                <button class="btn" id="login-btn">Войти в аккаунт</button>
                 <div class="auth-switch">
                     Нет аккаунта? <a href="#" id="switch-to-register">Создать новый</a>
                 </div>
@@ -708,17 +940,49 @@
                 <h2>Регистрация</h2>
                 <div class="form-group">
                     <label for="register-username">Имя пользователя</label>
-                    <input type="text" id="register-username" placeholder="Придумайте username">
-                </div>
-                <div class="form-group">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" placeholder="Введите ваш email">
+                    <input type="text" id="register-username" placeholder="Придумайте username (только латинские буквы и цифры)">
+                    <div class="error-message" id="register-username-error">
+                        <i class="fas fa-exclamation-circle"></i> Имя пользователя должно содержать только латинские буквы и цифры (3-20 символов)
+                    </div>
+                    <div class="success-message" id="register-username-success">
+                        <i class="fas fa-check-circle"></i> Имя пользователя доступно
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="register-password">Пароль</label>
-                    <input type="password" id="register-password" placeholder="Создайте пароль">
+                    <input type="password" id="register-password" placeholder="Создайте надежный пароль">
+                    <div class="password-strength" id="password-strength">
+                        <div class="password-strength-bar"></div>
+                    </div>
+                    <div class="password-requirements">
+                        <div class="requirement" id="length-req">
+                            <i class="fas fa-times"></i> Не менее 8 символов
+                        </div>
+                        <div class="requirement" id="lowercase-req">
+                            <i class="fas fa-times"></i> Содержит строчные буквы
+                        </div>
+                        <div class="requirement" id="uppercase-req">
+                            <i class="fas fa-times"></i> Содержит заглавные буквы
+                        </div>
+                        <div class="requirement" id="number-req">
+                            <i class="fas fa-times"></i> Содержит цифры
+                        </div>
+                        <div class="requirement" id="special-req">
+                            <i class="fas fa-times"></i> Содержит специальные символы
+                        </div>
+                    </div>
+                    <div class="error-message" id="register-password-error">
+                        <i class="fas fa-exclamation-circle"></i> Пароль не соответствует требованиям
+                    </div>
                 </div>
-                <button class="btn" id="register-btn">Создать аккаунт</button>
+                <div class="form-group">
+                    <label for="confirm-password">Подтверждение пароля</label>
+                    <input type="password" id="confirm-password" placeholder="Повторите пароль">
+                    <div class="error-message" id="confirm-password-error">
+                        <i class="fas fa-exclamation-circle"></i> Пароли не совпадают
+                    </div>
+                </div>
+                <button class="btn" id="register-btn" disabled>Создать аккаунт</button>
                 <div class="auth-switch">
                     Уже есть аккаунт? <a href="#" id="switch-to-login">Войти</a>
                 </div>
@@ -835,10 +1099,6 @@
                 <input type="text" id="username-setting" placeholder="Введите новое имя">
             </div>
             <div class="settings-option">
-                <label for="email-setting">Email</label>
-                <input type="email" id="email-setting" placeholder="Введите новый email">
-            </div>
-            <div class="settings-option">
                 <label for="password-setting">Новый пароль</label>
                 <input type="password" id="password-setting" placeholder="Введите новый пароль">
             </div>
@@ -891,7 +1151,6 @@
                         if (!db.objectStoreNames.contains('users')) {
                             const usersStore = db.createObjectStore('users', { keyPath: 'id' });
                             usersStore.createIndex('username', 'username', { unique: true });
-                            usersStore.createIndex('email', 'email', { unique: true });
                         }
                         
                         // Создаем хранилище для чатов
@@ -957,8 +1216,7 @@
                 const users = await this.getAllUsers();
                 const searchTerm = query.toLowerCase();
                 return users.filter(user => 
-                    user.username.toLowerCase().includes(searchTerm) ||
-                    user.email.toLowerCase().includes(searchTerm)
+                    user.username.toLowerCase().includes(searchTerm)
                 );
             }
 
@@ -1098,6 +1356,106 @@
         const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
         const avatarFile = document.getElementById('avatar-file');
 
+        // Валидация
+        function validateUsername(username) {
+            const regex = /^[a-zA-Z0-9]{3,20}$/;
+            return regex.test(username);
+        }
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const requirements = {
+                length: password.length >= 8,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^a-zA-Z0-9]/.test(password)
+            };
+
+            // Подсчет выполненных требований
+            Object.values(requirements).forEach(req => {
+                if (req) strength++;
+            });
+
+            return {
+                strength: strength,
+                requirements: requirements
+            };
+        }
+
+        function updatePasswordRequirements(requirements) {
+            const reqIds = ['length', 'lowercase', 'uppercase', 'number', 'special'];
+            reqIds.forEach(id => {
+                const element = document.getElementById(`${id}-req`);
+                const icon = element.querySelector('i');
+                
+                if (requirements[id]) {
+                    element.classList.add('valid');
+                    element.classList.remove('invalid');
+                    icon.className = 'fas fa-check';
+                } else {
+                    element.classList.add('invalid');
+                    element.classList.remove('valid');
+                    icon.className = 'fas fa-times';
+                }
+            });
+        }
+
+        function updatePasswordStrength(strength) {
+            const strengthBar = document.getElementById('password-strength');
+            strengthBar.className = 'password-strength';
+            
+            if (strength <= 2) {
+                strengthBar.classList.add('weak');
+            } else if (strength <= 4) {
+                strengthBar.classList.add('medium');
+            } else {
+                strengthBar.classList.add('strong');
+            }
+        }
+
+        function validateRegistrationForm() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            const isUsernameValid = validateUsername(username);
+            const passwordCheck = checkPasswordStrength(password);
+            const isPasswordValid = passwordCheck.strength >= 3; // Минимум 3 из 5 требований
+            const isConfirmValid = password === confirmPassword && password !== '';
+            
+            // Обновляем визуальные индикаторы
+            document.getElementById('register-username').className = isUsernameValid ? 'valid' : 'invalid';
+            document.getElementById('register-password').className = isPasswordValid ? 'valid' : 'invalid';
+            document.getElementById('confirm-password').className = isConfirmValid ? 'valid' : 'invalid';
+            
+            // Активируем/деактивируем кнопку регистрации
+            registerBtn.disabled = !(isUsernameValid && isPasswordValid && isConfirmValid);
+            
+            return isUsernameValid && isPasswordValid && isConfirmValid;
+        }
+
+        function validateLoginForm() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            const isUsernameValid = username.length >= 3;
+            const isPasswordValid = password.length >= 1;
+            
+            // Обновляем визуальные индикаторы
+            document.getElementById('login-username').className = isUsernameValid ? 'valid' : 'invalid';
+            document.getElementById('login-password').className = isPasswordValid ? 'valid' : 'invalid';
+            
+            // Показываем/скрываем сообщения об ошибках
+            document.getElementById('login-username-error').style.display = isUsernameValid ? 'none' : 'flex';
+            document.getElementById('login-password-error').style.display = isPasswordValid ? 'none' : 'flex';
+            
+            // Активируем/деактивируем кнопку входа
+            loginBtn.disabled = !(isUsernameValid && isPasswordValid);
+            
+            return isUsernameValid && isPasswordValid;
+        }
+
         // Инициализация при загрузке
         window.addEventListener('load', async () => {
             try {
@@ -1112,6 +1470,60 @@
                 
                 document.getElementById('login-form').style.display = 'block';
                 document.getElementById('register-form').style.display = 'none';
+                
+                // Добавляем обработчики событий для валидации
+                document.getElementById('register-username').addEventListener('input', async function() {
+                    const username = this.value;
+                    const isValid = validateUsername(username);
+                    
+                    document.getElementById('register-username-error').style.display = isValid ? 'none' : 'flex';
+                    
+                    if (isValid) {
+                        // Проверяем, существует ли пользователь с таким именем
+                        const existingUser = await db.getUserByUsername(username);
+                        if (existingUser) {
+                            document.getElementById('register-username-error').textContent = 'Имя пользователя уже занято';
+                            document.getElementById('register-username-error').style.display = 'flex';
+                            document.getElementById('register-username-success').style.display = 'none';
+                            this.className = 'invalid';
+                        } else {
+                            document.getElementById('register-username-success').style.display = 'flex';
+                            this.className = 'valid';
+                        }
+                    } else {
+                        document.getElementById('register-username-success').style.display = 'none';
+                    }
+                    
+                    validateRegistrationForm();
+                });
+                
+                document.getElementById('register-password').addEventListener('input', function() {
+                    const password = this.value;
+                    const passwordCheck = checkPasswordStrength(password);
+                    
+                    updatePasswordRequirements(passwordCheck.requirements);
+                    updatePasswordStrength(passwordCheck.strength);
+                    
+                    document.getElementById('register-password-error').style.display = 
+                        passwordCheck.strength >= 3 ? 'none' : 'flex';
+                    
+                    validateRegistrationForm();
+                });
+                
+                document.getElementById('confirm-password').addEventListener('input', function() {
+                    const password = document.getElementById('register-password').value;
+                    const confirmPassword = this.value;
+                    
+                    const isValid = password === confirmPassword && password !== '';
+                    
+                    document.getElementById('confirm-password-error').style.display = isValid ? 'none' : 'flex';
+                    
+                    validateRegistrationForm();
+                });
+                
+                document.getElementById('login-username').addEventListener('input', validateLoginForm);
+                document.getElementById('login-password').addEventListener('input', validateLoginForm);
+                
             } catch (error) {
                 console.error('❌ Ошибка инициализации БД:', error);
                 alert('Ошибка загрузки приложения. Проверьте консоль.');
@@ -1123,8 +1535,7 @@
                 {
                     id: 'user_1',
                     username: 'alex',
-                    email: 'alex@example.com',
-                    password: '123456',
+                    password: 'Password123!',
                     avatar: 'AL',
                     isOnline: false,
                     lastSeen: new Date().toISOString()
@@ -1132,8 +1543,7 @@
                 {
                     id: 'user_2',
                     username: 'maria',
-                    email: 'maria@example.com',
-                    password: '123456',
+                    password: 'Password123!',
                     avatar: 'MA',
                     isOnline: false,
                     lastSeen: new Date().toISOString()
@@ -1141,8 +1551,7 @@
                 {
                     id: 'user_3',
                     username: 'dmitry',
-                    email: 'dmitry@example.com',
-                    password: '123456',
+                    password: 'Password123!',
                     avatar: 'DM',
                     isOnline: false,
                     lastSeen: new Date().toISOString()
@@ -1238,7 +1647,7 @@
                             ${user.username}
                             ${user.isOnline ? '<span class="online-dot"></span>' : ''}
                         </div>
-                        <div class="search-username">${user.email}</div>
+                        <div class="search-username">@${user.username}</div>
                     </div>
                     <button class="start-chat-btn" data-user-id="${user.id}">
                         Написать
@@ -1457,7 +1866,7 @@
                             ${user.username}
                             ${user.isOnline ? '<span class="online-dot"></span>' : ''}
                         </div>
-                        <div class="user-status-small">${user.email}</div>
+                        <div class="user-status-small">@${user.username}</div>
                     </div>
                 `;
                 
@@ -1471,24 +1880,13 @@
 
         // Регистрация
         registerBtn.addEventListener('click', async () => {
+            if (!validateRegistrationForm()) {
+                alert('Пожалуйста, исправьте ошибки в форме');
+                return;
+            }
+
             const username = document.getElementById('register-username').value.trim();
-            const email = document.getElementById('register-email').value.trim();
             const password = document.getElementById('register-password').value;
-
-            if (!username || !email || !password) {
-                alert('Заполните все поля');
-                return;
-            }
-
-            if (username.length < 3) {
-                alert('Имя пользователя должно содержать не менее 3 символов');
-                return;
-            }
-
-            if (password.length < 6) {
-                alert('Пароль должен содержать не менее 6 символов');
-                return;
-            }
 
             // Проверяем уникальность username
             const existingUser = await db.getUserByUsername(username);
@@ -1501,7 +1899,6 @@
             const user = {
                 id: 'user_' + Date.now(),
                 username: username,
-                email: email,
                 password: password,
                 avatar: username.substring(0, 2).toUpperCase(),
                 isOnline: true,
@@ -1531,13 +1928,13 @@
 
         // Вход
         loginBtn.addEventListener('click', async () => {
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            if (!username || !password) {
-                alert('Заполните все поля');
+            if (!validateLoginForm()) {
+                alert('Пожалуйста, заполните все поля правильно');
                 return;
             }
+
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
 
             const user = await db.getUserByUsername(username);
             if (!user || user.password !== password) {
@@ -1588,8 +1985,30 @@
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
             document.getElementById('register-username').value = '';
-            document.getElementById('register-email').value = '';
             document.getElementById('register-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            
+            // Сбрасываем визуальные индикаторы
+            document.getElementById('login-username').className = '';
+            document.getElementById('login-password').className = '';
+            document.getElementById('register-username').className = '';
+            document.getElementById('register-password').className = '';
+            document.getElementById('confirm-password').className = '';
+            
+            document.getElementById('login-username-error').style.display = 'none';
+            document.getElementById('login-password-error').style.display = 'none';
+            document.getElementById('register-username-error').style.display = 'none';
+            document.getElementById('register-password-error').style.display = 'none';
+            document.getElementById('confirm-password-error').style.display = 'none';
+            document.getElementById('register-username-success').style.display = 'none';
+            
+            // Сбрасываем индикатор сложности пароля
+            document.getElementById('password-strength').className = 'password-strength';
+            document.querySelectorAll('.requirement').forEach(req => {
+                req.classList.remove('valid', 'invalid');
+                const icon = req.querySelector('i');
+                icon.className = 'fas fa-times';
+            });
         });
 
         // Обработка отправки сообщения
@@ -1642,7 +2061,6 @@
             const settings = await db.getSettings(currentUser.id);
             
             document.getElementById('username-setting').value = currentUser.username;
-            document.getElementById('email-setting').value = currentUser.email;
             document.getElementById('password-setting').value = '';
             document.getElementById('theme-setting').value = settings.theme || 'dark';
             document.getElementById('notifications-setting').value = settings.notifications || 'all';
@@ -1707,7 +2125,6 @@
         // Сохранение настроек
         saveSettingsBtn.addEventListener('click', async () => {
             const username = document.getElementById('username-setting').value.trim();
-            const email = document.getElementById('email-setting').value.trim();
             const password = document.getElementById('password-setting').value;
             const theme = document.getElementById('theme-setting').value;
             const notifications = document.getElementById('notifications-setting').value;
@@ -1715,12 +2132,27 @@
             // Обновляем данные пользователя
             const updates = {};
             if (username && username !== currentUser.username) {
+                // Проверяем, доступно ли новое имя пользователя
+                if (!validateUsername(username)) {
+                    alert('Имя пользователя должно содержать только латинские буквы и цифры (3-20 символов)');
+                    return;
+                }
+                
+                const existingUser = await db.getUserByUsername(username);
+                if (existingUser) {
+                    alert('Имя пользователя уже занято');
+                    return;
+                }
+                
                 updates.username = username;
             }
-            if (email && email !== currentUser.email) {
-                updates.email = email;
-            }
             if (password) {
+                // Проверяем сложность пароля
+                const passwordCheck = checkPasswordStrength(password);
+                if (passwordCheck.strength < 3) {
+                    alert('Пароль не соответствует требованиям безопасности');
+                    return;
+                }
                 updates.password = password;
             }
             
