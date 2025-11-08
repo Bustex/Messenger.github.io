@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WaveChat - Реальный мессенджер с БД</title>
+    <title>WaveChat - Безопасный и быстрый мессенджер</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -17,6 +17,7 @@
             --accent-purple: #8A2BE2;
             --online-green: #00FF88;
             --error-red: #FF4444;
+            --success-green: #00CC66;
         }
 
         * {
@@ -29,91 +30,408 @@
         body {
             background: linear-gradient(135deg, var(--dark-blue) 0%, #151A3A 100%);
             color: var(--text-white);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
-            width: 95%;
-            max-width: 1200px;
-            height: 90vh;
-            background: var(--card-blue);
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.3);
-            border: 1px solid rgba(0, 212, 255, 0.1);
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 102, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 102, 255, 0); }
-        }
-
-        /* Стили для экранов аутентификации */
-        .auth-container {
             width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Стили для главной страницы */
+        .landing-page {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+        }
+
+        .header {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 40px;
-            background: linear-gradient(135deg, var(--dark-blue) 0%, var(--card-blue) 100%);
         }
 
         .logo {
-            font-size: 3rem;
+            font-size: 2rem;
             font-weight: 800;
-            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--text-white);
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary-blue);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+            color: var(--text-white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-white);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .hero-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 60px 0;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            background: linear-gradient(45deg, var(--text-white), var(--secondary-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(26, 31, 62, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
             background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
 
-        .tagline {
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-visual {
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.3);
+        }
+
+        .hero-visual:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chat-bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 15px;
+            max-width: 200px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .chat-bubble:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .chat-bubble:nth-child(2) {
+            top: 40%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+
+        .chat-bubble:nth-child(3) {
+            bottom: 30%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .chat-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.9) transparent;
+        }
+
+        .chat-bubble.right:after {
+            left: auto;
+            right: 20px;
+        }
+
+        /* Стили для экранов аутентификации */
+        .auth-container {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: linear-gradient(135deg, var(--dark-blue) 0%, var(--card-blue) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-white);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .auth-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(0, 212, 255, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-icon:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-icon:nth-child(2) {
+            top: 20%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+
+        .floating-icon:nth-child(3) {
+            bottom: 15%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        .floating-icon:nth-child(4) {
+            bottom: 25%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        .auth-logo {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
+        }
+
+        .auth-tagline {
             color: var(--text-gray);
             margin-bottom: 40px;
             font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.5;
         }
 
         .auth-form {
             background: rgba(26, 31, 62, 0.9);
             padding: 40px;
-            border-radius: 16px;
+            border-radius: 20px;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .auth-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .auth-form h2 {
             color: var(--text-white);
             margin-bottom: 30px;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            position: relative;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: var(--text-gray);
             font-weight: 500;
+            font-size: 1rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 20px;
             background: var(--input-blue);
             border: 2px solid rgba(0, 212, 255, 0.3);
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             color: var(--text-white);
             transition: all 0.3s;
@@ -123,29 +441,125 @@
             border-color: var(--primary-blue);
             outline: none;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 255, 0.2);
         }
 
-        .btn {
+        .form-group input.valid {
+            border-color: var(--success-green);
+        }
+
+        .form-group input.invalid {
+            border-color: var(--error-red);
+        }
+
+        .password-strength {
+            margin-top: 10px;
+            height: 5px;
+            border-radius: 5px;
+            background: var(--input-blue);
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+
+        .password-strength.weak .password-strength-bar {
+            background: var(--error-red);
+            width: 33%;
+        }
+
+        .password-strength.medium .password-strength-bar {
+            background: orange;
+            width: 66%;
+        }
+
+        .password-strength.strong .password-strength-bar {
+            background: var(--success-green);
+            width: 100%;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .requirement i {
+            margin-right: 5px;
+            font-size: 0.8rem;
+        }
+
+        .requirement.valid {
+            color: var(--success-green);
+        }
+
+        .requirement.invalid {
+            color: var(--error-red);
+        }
+
+        .auth-btn {
             background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
             color: var(--text-white);
             border: none;
-            padding: 15px 24px;
-            border-radius: 10px;
+            padding: 16px 24px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
             margin-top: 10px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
+        .auth-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s;
+        }
+
+        .auth-btn:hover:before {
+            left: 100%;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(0, 102, 255, 0.4);
         }
 
+        .auth-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .auth-btn:disabled {
+            background: var(--input-blue);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .auth-btn:disabled:hover:before {
+            left: -100%;
+        }
+
         .auth-switch {
-            margin-top: 20px;
+            margin-top: 25px;
             text-align: center;
             color: var(--text-gray);
         }
@@ -154,20 +568,67 @@
             color: var(--secondary-blue);
             text-decoration: none;
             font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .auth-switch a:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--secondary-blue);
+            transition: width 0.3s;
+        }
+
+        .auth-switch a:hover:after {
+            width: 100%;
         }
 
         .error-message {
             color: var(--error-red);
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 8px;
             display: none;
+            align-items: center;
+        }
+
+        .error-message i {
+            margin-right: 5px;
+        }
+
+        .success-message {
+            color: var(--success-green);
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            align-items: center;
+        }
+
+        .success-message i {
+            margin-right: 5px;
         }
 
         /* Основной интерфейс мессенджера */
         .messenger-container {
             display: none;
             width: 100%;
-            height: 100%;
+            height: 100vh;
+        }
+
+        .app-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            background: var(--card-blue);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            margin: 5vh auto;
         }
 
         .sidebar {
@@ -204,6 +665,15 @@
             color: var(--text-white);
             font-weight: bold;
             font-size: 1.1rem;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .user-details {
@@ -229,7 +699,6 @@
             height: 8px;
             border-radius: 50%;
             background: var(--online-green);
-            animation: pulse 2s infinite;
         }
 
         .logout-btn {
@@ -398,12 +867,6 @@
             padding: 12px 16px;
             border-radius: 16px;
             position: relative;
-            animation: messageAppear 0.3s ease;
-        }
-
-        @keyframes messageAppear {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .message.sent {
@@ -506,6 +969,149 @@
             font-style: italic;
         }
 
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--card-blue);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--text-white);
+        }
+
+        .avatar-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--input-blue);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+
+        .avatar-option.selected {
+            border: 3px solid var(--primary-blue);
+        }
+
+        .avatar-upload {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .avatar-upload input {
+            display: none;
+        }
+
+        .avatar-upload label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--input-blue);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .avatar-upload label:hover {
+            background: var(--primary-blue);
+        }
+
+        .settings-option {
+            margin-bottom: 20px;
+        }
+
+        .settings-option label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-gray);
+        }
+
+        .settings-option input, .settings-option select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-blue);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            font-size: 16px;
+            color: var(--text-white);
+        }
+
+        .settings-option input:focus, .settings-option select:focus {
+            border-color: var(--primary-blue);
+            outline: none;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .settings-actions .btn {
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: var(--input-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-blue);
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -520,122 +1126,332 @@
         }
 
         @media (max-width: 768px) {
-            .container {
+            .app-container {
                 height: 100vh;
                 border-radius: 0;
+                margin: 0;
+                width: 100%;
             }
             .sidebar {
                 width: 100%;
+            }
+            .hero-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero-buttons {
+                justify-content: center;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container" id="auth-container">
-        <div class="auth-container">
-            <div class="logo">WAVECHAT</div>
-            <div class="tagline">Все данные сохраняются в базе</div>
-            
-            <div class="auth-form" id="login-form">
-                <h2>Вход в аккаунт</h2>
-                <div class="form-group">
-                    <label for="login-username">Имя пользователя</label>
-                    <input type="text" id="login-username" placeholder="Введите ваш username">
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Пароль</label>
-                    <input type="password" id="login-password" placeholder="Введите ваш пароль">
-                </div>
-                <button class="btn" id="login-btn">Войти</button>
-                <div class="auth-switch">
-                    Нет аккаунта? <a href="#" id="switch-to-register">Создать новый</a>
+    <!-- Главная страница -->
+    <div class="landing-page" id="landing-page">
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">WAVECHAT</div>
+                    <nav class="nav-links">
+                        <a href="#" class="nav-link">Главная</a>
+                        <a href="#" class="nav-link">Возможности</a>
+                        <a href="#" class="nav-link">Безопасность</a>
+                        <a href="#" class="nav-link">Поддержка</a>
+                    </nav>
+                    <div class="auth-buttons">
+                        <button class="btn btn-secondary" id="landing-login-btn">Войти</button>
+                        <button class="btn btn-primary" id="landing-register-btn">Регистрация</button>
+                    </div>
                 </div>
             </div>
+        </header>
 
-            <div class="auth-form" id="register-form" style="display: none;">
-                <h2>Регистрация</h2>
-                <div class="form-group">
-                    <label for="register-username">Имя пользователя</label>
-                    <input type="text" id="register-username" placeholder="Придумайте username">
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Безопасный и быстрый мессенджер</h1>
+                    <p class="hero-subtitle">WaveChat предлагает современное решение для общения с полной защитой ваших данных. Быстрая доставка сообщений, шифрование и удобный интерфейс.</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" id="hero-register-btn">Начать общение</button>
+                        <button class="btn btn-secondary">Узнать больше</button>
+                    </div>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h3 class="feature-title">Безопасность</h3>
+                            <p class="feature-description">Все ваши сообщения защищены современным шифрованием. Ваши данные в полной безопасности.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3 class="feature-title">Скорость</h3>
+                            <p class="feature-description">Мгновенная доставка сообщений даже при медленном интернет-соединении.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <h3 class="feature-title">Надежность</h3>
+                            <p class="feature-description">Все данные сохраняются в защищенной базе. Вы никогда не потеряете важные сообщения.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" placeholder="Введите ваш email">
+                <div class="hero-image">
+                    <div class="hero-visual">
+                        <div class="chat-bubble">
+                            Привет! Как дела?
+                        </div>
+                        <div class="chat-bubble right">
+                            Отлично! Спасибо за вопрос.
+                        </div>
+                        <div class="chat-bubble">
+                            Отправляю тебе важный файл...
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="register-password">Пароль</label>
-                    <input type="password" id="register-password" placeholder="Создайте пароль">
+            </div>
+        </section>
+    </div>
+
+    <!-- Страница аутентификации -->
+    <div class="auth-container" id="auth-container">
+        <button class="auth-back" id="auth-back-btn">
+            <i class="fas fa-arrow-left"></i> На главную
+        </button>
+        
+        <!-- Декоративные элементы -->
+        <div class="floating-icon">
+            <i class="fas fa-comment"></i>
+        </div>
+        <div class="floating-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="floating-icon">
+            <i class="fas fa-paper-plane"></i>
+        </div>
+        <div class="floating-icon">
+            <i class="fas fa-bolt"></i>
+        </div>
+        
+        <div class="auth-logo">WAVECHAT</div>
+        <div class="auth-tagline">Общайтесь в реальном времени с полной сохранностью истории в базе данных. Безопасно, быстро, удобно.</div>
+        
+        <div class="auth-form" id="login-form">
+            <h2>Вход в аккаунт</h2>
+            <div class="form-group">
+                <label for="login-username">Имя пользователя</label>
+                <input type="text" id="login-username" placeholder="Введите ваш username">
+                <div class="error-message" id="login-username-error">
+                    <i class="fas fa-exclamation-circle"></i> Пожалуйста, введите имя пользователя
                 </div>
-                <button class="btn" id="register-btn">Создать аккаунт</button>
-                <div class="auth-switch">
-                    Уже есть аккаунт? <a href="#" id="switch-to-login">Войти</a>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Пароль</label>
+                <input type="password" id="login-password" placeholder="Введите ваш пароль">
+                <div class="error-message" id="login-password-error">
+                    <i class="fas fa-exclamation-circle"></i> Пожалуйста, введите пароль
+                </div>
+            </div>
+            <button class="auth-btn" id="login-btn">Войти в аккаунт</button>
+            <div class="auth-switch">
+                Нет аккаунта? <a href="#" id="switch-to-register">Создать новый</a>
+            </div>
+        </div>
+
+        <div class="auth-form" id="register-form" style="display: none;">
+            <h2>Регистрация</h2>
+            <div class="form-group">
+                <label for="register-username">Имя пользователя</label>
+                <input type="text" id="register-username" placeholder="Придумайте username (только латинские буквы и цифры)">
+                <div class="error-message" id="register-username-error">
+                    <i class="fas fa-exclamation-circle"></i> Имя пользователя должно содержать только латинские буквы и цифры (3-20 символов)
+                </div>
+                <div class="success-message" id="register-username-success">
+                    <i class="fas fa-check-circle"></i> Имя пользователя доступно
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="register-password">Пароль</label>
+                <input type="password" id="register-password" placeholder="Создайте надежный пароль">
+                <div class="password-strength" id="password-strength">
+                    <div class="password-strength-bar"></div>
+                </div>
+                <div class="password-requirements">
+                    <div class="requirement" id="length-req">
+                        <i class="fas fa-times"></i> Не менее 8 символов
+                    </div>
+                    <div class="requirement" id="lowercase-req">
+                        <i class="fas fa-times"></i> Содержит строчные буквы
+                    </div>
+                    <div class="requirement" id="uppercase-req">
+                        <i class="fas fa-times"></i> Содержит заглавные буквы
+                    </div>
+                    <div class="requirement" id="number-req">
+                        <i class="fas fa-times"></i> Содержит цифры
+                    </div>
+                    <div class="requirement" id="special-req">
+                        <i class="fas fa-times"></i> Содержит специальные символы
+                    </div>
+                </div>
+                <div class="error-message" id="register-password-error">
+                    <i class="fas fa-exclamation-circle"></i> Пароль не соответствует требованиям
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Подтверждение пароля</label>
+                <input type="password" id="confirm-password" placeholder="Повторите пароль">
+                <div class="error-message" id="confirm-password-error">
+                    <i class="fas fa-exclamation-circle"></i> Пароли не совпадают
+                </div>
+            </div>
+            <button class="auth-btn" id="register-btn" disabled>Создать аккаунт</button>
+            <div class="auth-switch">
+                Уже есть аккаунт? <a href="#" id="switch-to-login">Войти</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной интерфейс мессенджера -->
+    <div class="messenger-container" id="messenger-container">
+        <div class="app-container">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-info">
+                        <div class="avatar" id="user-avatar" title="Сменить аватар">U</div>
+                        <div class="user-details">
+                            <div class="user-name" id="user-name">Пользователь</div>
+                            <div class="user-status"><span class="status-dot"></span> онлайн</div>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="logout-btn" id="settings-btn" title="Настройки">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="logout-btn" id="logout-btn" title="Выйти">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" class="search-input" id="global-search" placeholder="Поиск пользователей...">
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="chats">Чаты</div>
+                    <div class="tab" data-tab="users">Все пользователи</div>
+                </div>
+                
+                <div class="chats-list" id="chats-list">
+                    <div class="loading">Загрузка чатов...</div>
+                </div>
+                
+                <div class="users-list" id="users-list">
+                    <div class="loading">Загрузка пользователей...</div>
+                </div>
+                
+                <div class="search-results" id="search-results"></div>
+            </div>
+            
+            <div class="chat-content">
+                <div class="chat-header">
+                    <div class="avatar" id="current-chat-avatar">?</div>
+                    <div class="user-details">
+                        <div class="user-name" id="current-chat-name">Выберите чат</div>
+                        <div class="user-status" id="current-chat-status"></div>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <div class="welcome-message">
+                        <p>Добро пожаловать в WaveChat!</p>
+                        <p>Все сообщения сохраняются в базе данных.</p>
+                    </div>
+                </div>
+                
+                <div class="chat-input-container">
+                    <button class="action-btn" id="attachment-btn" title="Прикрепить файл">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <button class="action-btn" id="emoji-btn" title="Эмодзи">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <textarea class="message-input" id="message-input" placeholder="Введите сообщение..." rows="1" disabled></textarea>
+                    <button class="send-btn" id="send-btn" title="Отправить" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="container messenger-container" id="messenger-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="user-info">
-                    <div class="avatar" id="user-avatar">U</div>
-                    <div class="user-details">
-                        <div class="user-name" id="user-name">Пользователь</div>
-                        <div class="user-status"><span class="status-dot"></span> онлайн</div>
-                    </div>
-                </div>
-                <button class="logout-btn" id="logout-btn" title="Выйти">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+    <!-- Модальное окно смены аватара -->
+    <div class="modal" id="avatar-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Сменить аватар</h3>
+                <button class="close-modal">&times;</button>
             </div>
-            
-            <div class="search-container">
-                <input type="text" class="search-input" id="global-search" placeholder="Поиск пользователей...">
+            <div class="avatar-options">
+                <div class="avatar-option" data-avatar="AL">AL</div>
+                <div class="avatar-option" data-avatar="MA">MA</div>
+                <div class="avatar-option" data-avatar="DM">DM</div>
+                <div class="avatar-option" data-avatar="AN">AN</div>
+                <div class="avatar-option" data-avatar="SV">SV</div>
+                <div class="avatar-option" data-avatar="KT">KT</div>
             </div>
-            
-            <div class="tabs">
-                <div class="tab active" data-tab="chats">Чаты</div>
-                <div class="tab" data-tab="users">Все пользователи</div>
+            <div class="avatar-upload">
+                <input type="file" id="avatar-file" accept="image/*">
+                <label for="avatar-file">Загрузить изображение</label>
             </div>
-            
-            <div class="chats-list" id="chats-list">
-                <div class="loading">Загрузка чатов...</div>
+            <div class="settings-actions">
+                <button class="btn btn-primary" id="save-avatar-btn">Сохранить</button>
+                <button class="btn btn-secondary" id="cancel-avatar-btn">Отмена</button>
             </div>
-            
-            <div class="users-list" id="users-list">
-                <div class="loading">Загрузка пользователей...</div>
-            </div>
-            
-            <div class="search-results" id="search-results"></div>
         </div>
-        
-        <div class="chat-content">
-            <div class="chat-header">
-                <div class="avatar" id="current-chat-avatar">?</div>
-                <div class="user-details">
-                    <div class="user-name" id="current-chat-name">Выберите чат</div>
-                    <div class="user-status" id="current-chat-status"></div>
-                </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Настройки</h3>
+                <button class="close-modal">&times;</button>
             </div>
-            
-            <div class="chat-messages" id="chat-messages">
-                <div class="welcome-message">
-                    <p>Добро пожаловать в WaveChat!</p>
-                    <p>Все сообщения сохраняются в базе данных.</p>
-                </div>
+            <div class="settings-option">
+                <label for="username-setting">Имя пользователя</label>
+                <input type="text" id="username-setting" placeholder="Введите новое имя">
             </div>
-            
-            <div class="chat-input-container">
-                <button class="action-btn" id="attachment-btn" title="Прикрепить файл">
-                    <i class="fas fa-paperclip"></i>
-                </button>
-                <button class="action-btn" id="emoji-btn" title="Эмодзи">
-                    <i class="fas fa-smile"></i>
-                </button>
-                <textarea class="message-input" id="message-input" placeholder="Введите сообщение..." rows="1" disabled></textarea>
-                <button class="send-btn" id="send-btn" title="Отправить" disabled>
-                    <i class="fas fa-paper-plane"></i>
-                </button>
+            <div class="settings-option">
+                <label for="password-setting">Новый пароль</label>
+                <input type="password" id="password-setting" placeholder="Введите новый пароль">
+            </div>
+            <div class="settings-option">
+                <label for="theme-setting">Тема оформления</label>
+                <select id="theme-setting">
+                    <option value="dark">Темная</option>
+                    <option value="light">Светлая</option>
+                    <option value="auto">Системная</option>
+                </select>
+            </div>
+            <div class="settings-option">
+                <label for="notifications-setting">Уведомления</label>
+                <select id="notifications-setting">
+                    <option value="all">Все</option>
+                    <option value="mentions">Только упоминания</option>
+                    <option value="none">Отключить</option>
+                </select>
+            </div>
+            <div class="settings-actions">
+                <button class="btn btn-primary" id="save-settings-btn">Сохранить</button>
+                <button class="btn btn-secondary" id="cancel-settings-btn">Отмена</button>
             </div>
         </div>
     </div>
@@ -646,7 +1462,7 @@
             constructor() {
                 this.db = null;
                 this.dbName = 'WaveChatDB';
-                this.version = 1;
+                this.version = 2;
             }
 
             async init() {
@@ -662,24 +1478,24 @@
                     request.onupgradeneeded = (event) => {
                         const db = event.target.result;
                         
-                        // Создаем хранилище для пользователей
                         if (!db.objectStoreNames.contains('users')) {
                             const usersStore = db.createObjectStore('users', { keyPath: 'id' });
                             usersStore.createIndex('username', 'username', { unique: true });
-                            usersStore.createIndex('email', 'email', { unique: true });
                         }
                         
-                        // Создаем хранилище для чатов
                         if (!db.objectStoreNames.contains('chats')) {
                             const chatsStore = db.createObjectStore('chats', { keyPath: 'id' });
                             chatsStore.createIndex('lastMessageTime', 'lastMessageTime');
                         }
                         
-                        // Создаем хранилище для сообщений
                         if (!db.objectStoreNames.contains('messages')) {
                             const messagesStore = db.createObjectStore('messages', { keyPath: 'id' });
                             messagesStore.createIndex('chatId', 'chatId');
                             messagesStore.createIndex('timestamp', 'timestamp');
+                        }
+
+                        if (!db.objectStoreNames.contains('settings')) {
+                            const settingsStore = db.createObjectStore('settings', { keyPath: 'userId' });
                         }
                     };
                 });
@@ -703,6 +1519,16 @@
                 });
             }
 
+            async getUserById(userId) {
+                const transaction = this.db.transaction(['users'], 'readonly');
+                const store = transaction.objectStore('users');
+                return new Promise((resolve, reject) => {
+                    const request = store.get(userId);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
             async getAllUsers() {
                 const transaction = this.db.transaction(['users'], 'readonly');
                 const store = transaction.objectStore('users');
@@ -717,8 +1543,7 @@
                 const users = await this.getAllUsers();
                 const searchTerm = query.toLowerCase();
                 return users.filter(user => 
-                    user.username.toLowerCase().includes(searchTerm) ||
-                    user.email.toLowerCase().includes(searchTerm)
+                    user.username.toLowerCase().includes(searchTerm)
                 );
             }
 
@@ -730,6 +1555,25 @@
                     Object.assign(user, updates);
                     return store.put(user);
                 }
+            }
+
+            // Настройки
+            async getSettings(userId) {
+                const transaction = this.db.transaction(['settings'], 'readonly');
+                const store = transaction.objectStore('settings');
+                return new Promise((resolve, reject) => {
+                    const request = store.get(userId);
+                    request.onsuccess = () => resolve(request.result || {});
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async saveSettings(userId, settings) {
+                const transaction = this.db.transaction(['settings'], 'readwrite');
+                const store = transaction.objectStore('settings');
+                const existing = await this.getSettings(userId);
+                const merged = { ...existing, ...settings, userId };
+                return store.put(merged);
             }
 
             // Чаты
@@ -815,17 +1659,159 @@
         const db = new WaveChatDB();
         let currentUser = null;
         let currentChat = null;
+        let updateInterval = null;
 
         // Элементы DOM
+        const landingPage = document.getElementById('landing-page');
         const authContainer = document.getElementById('auth-container');
         const messengerContainer = document.getElementById('messenger-container');
+        
+        // Кнопки на главной странице
+        const landingLoginBtn = document.getElementById('landing-login-btn');
+        const landingRegisterBtn = document.getElementById('landing-register-btn');
+        const heroRegisterBtn = document.getElementById('hero-register-btn');
+        
+        // Кнопки аутентификации
+        const authBackBtn = document.getElementById('auth-back-btn');
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
         const switchToRegister = document.getElementById('switch-to-register');
         const switchToLogin = document.getElementById('switch-to-login');
         const logoutBtn = document.getElementById('logout-btn');
+        const settingsBtn = document.getElementById('settings-btn');
         const globalSearch = document.getElementById('global-search');
         const tabs = document.querySelectorAll('.tab');
+
+        // Модальные окна
+        const avatarModal = document.getElementById('avatar-modal');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        const saveAvatarBtn = document.getElementById('save-avatar-btn');
+        const cancelAvatarBtn = document.getElementById('cancel-avatar-btn');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
+        const avatarFile = document.getElementById('avatar-file');
+
+        // Валидация
+        function validateUsername(username) {
+            const regex = /^[a-zA-Z0-9]{3,20}$/;
+            return regex.test(username);
+        }
+
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const requirements = {
+                length: password.length >= 8,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^a-zA-Z0-9]/.test(password)
+            };
+
+            Object.values(requirements).forEach(req => {
+                if (req) strength++;
+            });
+
+            return {
+                strength: strength,
+                requirements: requirements
+            };
+        }
+
+        function updatePasswordRequirements(requirements) {
+            const reqIds = ['length', 'lowercase', 'uppercase', 'number', 'special'];
+            reqIds.forEach(id => {
+                const element = document.getElementById(`${id}-req`);
+                const icon = element.querySelector('i');
+                
+                if (requirements[id]) {
+                    element.classList.add('valid');
+                    element.classList.remove('invalid');
+                    icon.className = 'fas fa-check';
+                } else {
+                    element.classList.add('invalid');
+                    element.classList.remove('valid');
+                    icon.className = 'fas fa-times';
+                }
+            });
+        }
+
+        function updatePasswordStrength(strength) {
+            const strengthBar = document.getElementById('password-strength');
+            strengthBar.className = 'password-strength';
+            
+            if (strength <= 2) {
+                strengthBar.classList.add('weak');
+            } else if (strength <= 4) {
+                strengthBar.classList.add('medium');
+            } else {
+                strengthBar.classList.add('strong');
+            }
+        }
+
+        function validateRegistrationForm() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            const isUsernameValid = validateUsername(username);
+            const passwordCheck = checkPasswordStrength(password);
+            const isPasswordValid = passwordCheck.strength >= 3;
+            const isConfirmValid = password === confirmPassword && password !== '';
+            
+            document.getElementById('register-username').className = isUsernameValid ? 'valid' : 'invalid';
+            document.getElementById('register-password').className = isPasswordValid ? 'valid' : 'invalid';
+            document.getElementById('confirm-password').className = isConfirmValid ? 'valid' : 'invalid';
+            
+            registerBtn.disabled = !(isUsernameValid && isPasswordValid && isConfirmValid);
+            
+            return isUsernameValid && isPasswordValid && isConfirmValid;
+        }
+
+        function validateLoginForm() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            const isUsernameValid = username.length >= 3;
+            const isPasswordValid = password.length >= 1;
+            
+            document.getElementById('login-username').className = isUsernameValid ? 'valid' : 'invalid';
+            document.getElementById('login-password').className = isPasswordValid ? 'valid' : 'invalid';
+            
+            document.getElementById('login-username-error').style.display = isUsernameValid ? 'none' : 'flex';
+            document.getElementById('login-password-error').style.display = isPasswordValid ? 'none' : 'flex';
+            
+            loginBtn.disabled = !(isUsernameValid && isPasswordValid);
+            
+            return isUsernameValid && isPasswordValid;
+        }
+
+        // Навигация между страницами
+        landingLoginBtn.addEventListener('click', () => {
+            landingPage.style.display = 'none';
+            authContainer.style.display = 'flex';
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        });
+
+        landingRegisterBtn.addEventListener('click', () => {
+            landingPage.style.display = 'none';
+            authContainer.style.display = 'flex';
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        });
+
+        heroRegisterBtn.addEventListener('click', () => {
+            landingPage.style.display = 'none';
+            authContainer.style.display = 'flex';
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        });
+
+        authBackBtn.addEventListener('click', () => {
+            authContainer.style.display = 'none';
+            landingPage.style.display = 'block';
+        });
 
         // Инициализация при загрузке
         window.addEventListener('load', async () => {
@@ -833,14 +1819,68 @@
                 await db.init();
                 console.log('✅ База данных инициализирована');
                 
-                // Создаем тестовых пользователей если их нет
                 const users = await db.getAllUsers();
                 if (users.length === 0) {
                     await createDemoUsers();
                 }
                 
-                document.getElementById('login-form').style.display = 'block';
-                document.getElementById('register-form').style.display = 'none';
+                // Показываем главную страницу
+                landingPage.style.display = 'block';
+                authContainer.style.display = 'none';
+                messengerContainer.style.display = 'none';
+                
+                // Добавляем обработчики событий для валидации
+                document.getElementById('register-username').addEventListener('input', async function() {
+                    const username = this.value;
+                    const isValid = validateUsername(username);
+                    
+                    document.getElementById('register-username-error').style.display = isValid ? 'none' : 'flex';
+                    
+                    if (isValid) {
+                        const existingUser = await db.getUserByUsername(username);
+                        if (existingUser) {
+                            document.getElementById('register-username-error').textContent = 'Имя пользователя уже занято';
+                            document.getElementById('register-username-error').style.display = 'flex';
+                            document.getElementById('register-username-success').style.display = 'none';
+                            this.className = 'invalid';
+                        } else {
+                            document.getElementById('register-username-success').style.display = 'flex';
+                            this.className = 'valid';
+                        }
+                    } else {
+                        document.getElementById('register-username-success').style.display = 'none';
+                    }
+                    
+                    validateRegistrationForm();
+                });
+                
+                document.getElementById('register-password').addEventListener('input', function() {
+                    const password = this.value;
+                    const passwordCheck = checkPasswordStrength(password);
+                    
+                    updatePasswordRequirements(passwordCheck.requirements);
+                    updatePasswordStrength(passwordCheck.strength);
+                    
+                    document.getElementById('register-password-error').style.display = 
+                        passwordCheck.strength >= 3 ? 'none' : 'flex';
+                    
+                    validateRegistrationForm();
+                });
+                
+                document.getElementById('confirm-password').addEventListener('input', function() {
+                    const password = document.getElementById('register-password').value;
+                    const confirmPassword = this.value;
+                    
+                    const isValid = password === confirmPassword && password !== '';
+                    
+                    document.getElementById('confirm-password-error').style.display = isValid ? 'none' : 'flex';
+                    
+                    validateRegistrationForm();
+                });
+                
+                document.getElementById('login-username').addEventListener('input', validateLoginForm);
+                document.getElementById('login-password').addEventListener('input', validateLoginForm);
+                
             } catch (error) {
                 console.error('❌ Ошибка инициализации БД:', error);
                 alert('Ошибка загрузки приложения. Проверьте консоль.');
@@ -852,8 +1892,7 @@
                 {
                     id: 'user_1',
                     username: 'alex',
-                    email: 'alex@example.com',
-                    password: '123456',
+                    password: 'Password123!',
                     avatar: 'AL',
                     isOnline: false,
                     lastSeen: new Date().toISOString()
@@ -861,8 +1900,7 @@
                 {
                     id: 'user_2',
                     username: 'maria',
-                    email: 'maria@example.com',
-                    password: '123456',
+                    password: 'Password123!',
                     avatar: 'MA',
                     isOnline: false,
                     lastSeen: new Date().toISOString()
@@ -870,8 +1908,7 @@
                 {
                     id: 'user_3',
                     username: 'dmitry',
-                    email: 'dmitry@example.com',
-                    password: '123456',
+                    password: 'Password123!',
                     avatar: 'DM',
                     isOnline: false,
                     lastSeen: new Date().toISOString()
@@ -967,7 +2004,7 @@
                             ${user.username}
                             ${user.isOnline ? '<span class="online-dot"></span>' : ''}
                         </div>
-                        <div class="search-username">${user.email}</div>
+                        <div class="search-username">@${user.username}</div>
                     </div>
                     <button class="start-chat-btn" data-user-id="${user.id}">
                         Написать
@@ -992,7 +2029,7 @@
             let chat = await db.findChatBetweenUsers(currentUser.id, userId);
             
             if (!chat) {
-                const otherUser = await db.getUserByUsername(userId);
+                const otherUser = await db.getUserById(userId);
                 chat = {
                     id: 'chat_' + Date.now(),
                     participants: [currentUser.id, userId],
@@ -1023,7 +2060,7 @@
             if (!chat) return;
             
             const otherUserId = chat.participants.find(id => id !== currentUser.id);
-            const otherUser = await db.getUserByUsername(otherUserId);
+            const otherUser = await db.getUserById(otherUserId);
             
             document.getElementById('current-chat-avatar').textContent = otherUser.avatar;
             document.getElementById('current-chat-name').textContent = otherUser.username;
@@ -1107,7 +2144,6 @@
             
             await db.addMessage(message);
             
-            // Обновляем последнее сообщение в чате
             await db.updateChat(currentChat, {
                 lastMessage: text,
                 lastMessageTime: new Date().toISOString()
@@ -1131,7 +2167,7 @@
             
             for (const chat of chats) {
                 const otherUserId = chat.participants.find(id => id !== currentUser.id);
-                const otherUser = await db.getUserByUsername(otherUserId);
+                const otherUser = await db.getUserById(otherUserId);
                 const lastMessage = await db.getLastMessage(chat.id);
                 
                 const chatItem = document.createElement('div');
@@ -1181,12 +2217,12 @@
                 userItem.className = 'user-item';
                 userItem.innerHTML = `
                     <div class="avatar">${user.avatar}</div>
-                    <div class="user-info-small">
+                    <div class="user-info-small'>
                         <div class="user-name-small">
                             ${user.username}
                             ${user.isOnline ? '<span class="online-dot"></span>' : ''}
                         </div>
-                        <div class="user-status-small">${user.email}</div>
+                        <div class="user-status-small">@${user.username}</div>
                     </div>
                 `;
                 
@@ -1200,37 +2236,23 @@
 
         // Регистрация
         registerBtn.addEventListener('click', async () => {
+            if (!validateRegistrationForm()) {
+                alert('Пожалуйста, исправьте ошибки в форме');
+                return;
+            }
+
             const username = document.getElementById('register-username').value.trim();
-            const email = document.getElementById('register-email').value.trim();
             const password = document.getElementById('register-password').value;
 
-            if (!username || !email || !password) {
-                alert('Заполните все поля');
-                return;
-            }
-
-            if (username.length < 3) {
-                alert('Имя пользователя должно содержать не менее 3 символов');
-                return;
-            }
-
-            if (password.length < 6) {
-                alert('Пароль должен содержать не менее 6 символов');
-                return;
-            }
-
-            // Проверяем уникальность username
             const existingUser = await db.getUserByUsername(username);
             if (existingUser) {
                 alert('Пользователь с таким именем уже существует');
                 return;
             }
 
-            // Создаем пользователя
             const user = {
                 id: 'user_' + Date.now(),
                 username: username,
-                email: email,
                 password: password,
                 avatar: username.substring(0, 2).toUpperCase(),
                 isOnline: true,
@@ -1240,24 +2262,31 @@
             await db.addUser(user);
             currentUser = user;
             
+            await db.saveSettings(user.id, {
+                theme: 'dark',
+                notifications: 'all'
+            });
+            
             authContainer.style.display = 'none';
-            messengerContainer.style.display = 'flex';
+            messengerContainer.style.display = 'block';
             
             document.getElementById('user-avatar').textContent = currentUser.avatar;
             document.getElementById('user-name').textContent = currentUser.username;
             
             await loadUserChats();
+            
+            startRealTimeUpdates();
         });
 
         // Вход
         loginBtn.addEventListener('click', async () => {
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            if (!username || !password) {
-                alert('Заполните все поля');
+            if (!validateLoginForm()) {
+                alert('Пожалуйста, заполните все поля правильно');
                 return;
             }
+
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
 
             const user = await db.getUserByUsername(username);
             if (!user || user.password !== password) {
@@ -1267,19 +2296,20 @@
 
             currentUser = user;
             
-            // Обновляем статус
             await db.updateUser(user.id, {
                 isOnline: true,
                 lastSeen: new Date().toISOString()
             });
             
             authContainer.style.display = 'none';
-            messengerContainer.style.display = 'flex';
+            messengerContainer.style.display = 'block';
             
             document.getElementById('user-avatar').textContent = currentUser.avatar;
             document.getElementById('user-name').textContent = currentUser.username;
             
             await loadUserChats();
+            
+            startRealTimeUpdates();
         });
 
         // Выход
@@ -1294,13 +2324,38 @@
             currentUser = null;
             currentChat = null;
             messengerContainer.style.display = 'none';
-            authContainer.style.display = 'flex';
+            landingPage.style.display = 'block';
+            
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
             
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
             document.getElementById('register-username').value = '';
-            document.getElementById('register-email').value = '';
             document.getElementById('register-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            
+            document.getElementById('login-username').className = '';
+            document.getElementById('login-password').className = '';
+            document.getElementById('register-username').className = '';
+            document.getElementById('register-password').className = '';
+            document.getElementById('confirm-password').className = '';
+            
+            document.getElementById('login-username-error').style.display = 'none';
+            document.getElementById('login-password-error').style.display = 'none';
+            document.getElementById('register-username-error').style.display = 'none';
+            document.getElementById('register-password-error').style.display = 'none';
+            document.getElementById('confirm-password-error').style.display = 'none';
+            document.getElementById('register-username-success').style.display = 'none';
+            
+            document.getElementById('password-strength').className = 'password-strength';
+            document.querySelectorAll('.requirement').forEach(req => {
+                req.classList.remove('valid', 'invalid');
+                const icon = req.querySelector('i');
+                icon.className = 'fas fa-times';
+            });
         });
 
         // Обработка отправки сообщения
@@ -1330,6 +2385,148 @@
             alert('Выберите эмодзи для вставки');
         });
 
+        // Модальные окна
+        document.getElementById('user-avatar').addEventListener('click', () => {
+            avatarModal.style.display = 'flex';
+            const currentAvatar = currentUser.avatar;
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                if (option.dataset.avatar === currentAvatar) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        });
+
+        settingsBtn.addEventListener('click', async () => {
+            settingsModal.style.display = 'flex';
+            
+            const settings = await db.getSettings(currentUser.id);
+            
+            document.getElementById('username-setting').value = currentUser.username;
+            document.getElementById('password-setting').value = '';
+            document.getElementById('theme-setting').value = settings.theme || 'dark';
+            document.getElementById('notifications-setting').value = settings.notifications || 'all';
+        });
+
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                avatarModal.style.display = 'none';
+                settingsModal.style.display = 'none';
+            });
+        });
+
+        cancelAvatarBtn.addEventListener('click', () => {
+            avatarModal.style.display = 'none';
+        });
+
+        cancelSettingsBtn.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+
+        saveAvatarBtn.addEventListener('click', async () => {
+            const selectedAvatar = document.querySelector('.avatar-option.selected');
+            if (selectedAvatar) {
+                const newAvatar = selectedAvatar.dataset.avatar;
+                await db.updateUser(currentUser.id, { avatar: newAvatar });
+                currentUser.avatar = newAvatar;
+                document.getElementById('user-avatar').textContent = newAvatar;
+                avatarModal.style.display = 'none';
+                
+                if (document.querySelector('.tab.active').dataset.tab === 'chats') {
+                    await loadUserChats();
+                }
+            }
+        });
+
+        document.querySelectorAll('.avatar-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        avatarFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    alert('Изображение загружено! В реальном приложении оно будет сохранено в базе данных.');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        saveSettingsBtn.addEventListener('click', async () => {
+            const username = document.getElementById('username-setting').value.trim();
+            const password = document.getElementById('password-setting').value;
+            const theme = document.getElementById('theme-setting').value;
+            const notifications = document.getElementById('notifications-setting').value;
+            
+            const updates = {};
+            if (username && username !== currentUser.username) {
+                if (!validateUsername(username)) {
+                    alert('Имя пользователя должно содержать только латинские буквы и цифры (3-20 символов)');
+                    return;
+                }
+                
+                const existingUser = await db.getUserByUsername(username);
+                if (existingUser) {
+                    alert('Имя пользователя уже занято');
+                    return;
+                }
+                
+                updates.username = username;
+            }
+            if (password) {
+                const passwordCheck = checkPasswordStrength(password);
+                if (passwordCheck.strength < 3) {
+                    alert('Пароль не соответствует требованиям безопасности');
+                    return;
+                }
+                updates.password = password;
+            }
+            
+            if (Object.keys(updates).length > 0) {
+                await db.updateUser(currentUser.id, updates);
+                currentUser = { ...currentUser, ...updates };
+                document.getElementById('user-name').textContent = currentUser.username;
+            }
+            
+            await db.saveSettings(currentUser.id, {
+                theme: theme,
+                notifications: notifications
+            });
+            
+            settingsModal.style.display = 'none';
+            alert('Настройки сохранены!');
+        });
+
+        // Обновление в реальном времени
+        function startRealTimeUpdates() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            
+            updateInterval = setInterval(async () => {
+                if (currentUser) {
+                    await db.updateUser(currentUser.id, {
+                        lastSeen: new Date().toISOString()
+                    });
+                    
+                    const activeTab = document.querySelector('.tab.active').dataset.tab;
+                    if (activeTab === 'chats') {
+                        await loadUserChats();
+                    } else if (activeTab === 'users') {
+                        await loadAllUsers();
+                    }
+                    
+                    if (currentChat) {
+                        await loadChatMessages(currentChat);
+                    }
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html>
