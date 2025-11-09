@@ -1534,6 +1534,8 @@
         .call-controls {
             display: flex;
             gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .call-btn {
@@ -1547,6 +1549,11 @@
             cursor: pointer;
             transition: all 0.3s;
             border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .call-btn:hover {
+            transform: scale(1.1);
         }
 
         .call-btn.accept {
@@ -1569,8 +1576,17 @@
             color: white;
         }
 
-        .call-btn:hover {
-            transform: scale(1.1);
+        .call-btn.mute.muted {
+            background: var(--error-red);
+        }
+
+        .call-btn.video {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .call-btn.video.off {
+            background: var(--error-red);
         }
 
         /* Модальные окна */
@@ -2569,8 +2585,11 @@
             <button class="call-btn end" id="end-call-btn" title="Завершить" style="display: none;">
                 <i class="fas fa-phone-slash"></i>
             </button>
-            <button class="call-btn mute" id="mute-call-btn" title="Выключить звук" style="display: none;">
-                <i class="fas fa-microphone-slash"></i>
+            <button class="call-btn mute" id="mute-call-btn" title="Выключить микрофон" style="display: none;">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button class="call-btn video" id="video-toggle-btn" title="Выключить камеру" style="display: none;">
+                <i class="fas fa-video"></i>
             </button>
         </div>
     </div>
@@ -3108,6 +3127,8 @@
         let isInCall = false;
         let callTimer = null;
         let callStartTime = null;
+        let isMicrophoneMuted = false;
+        let isCameraOff = false;
 
         // Элементы DOM
         const landingPage = document.getElementById('landing-page');
@@ -3127,6 +3148,62 @@
         let currentColor = '#0066FF';
         let startX, startY;
         let ctx = drawingCanvas.getContext('2d');
+
+        // Функция для воспроизведения голосовых сообщений
+        function playVoiceMessage(url) {
+            try {
+                const audio = new Audio(url);
+                audio.play().catch(e => {
+                    console.error("Ошибка воспроизведения аудио:", e);
+                    showNotification("Не удалось воспроизвести голосовое сообщение", "error");
+                });
+                
+                // Добавляем обработчик для отслеживания окончания воспроизведения
+                audio.addEventListener('ended', function() {
+                    // Можно добавить логику для сброса визуальных индикаторов
+                    console.log("Воспроизведение завершено");
+                });
+                
+                // Показываем уведомление о начале воспроизведения
+                showNotification("Воспроизведение голосового сообщения", "info");
+                
+            } catch (error) {
+                console.error("Ошибка при создании аудио:", error);
+                showNotification("Ошибка воспроизведения голосового сообщения", "error");
+            }
+        }
+        
+        // Функция для переключения микрофона
+        function toggleMicrophone() {
+            isMicrophoneMuted = !isMicrophoneMuted;
+            const muteBtn = document.getElementById('mute-call-btn');
+            
+            if (isMicrophoneMuted) {
+                muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                muteBtn.classList.add('muted');
+                showNotification('Микрофон выключен', 'info');
+            } else {
+                muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                muteBtn.classList.remove('muted');
+                showNotification('Микрофон включен', 'info');
+            }
+        }
+        
+        // Функция для переключения камеры
+        function toggleCamera() {
+            isCameraOff = !isCameraOff;
+            const videoBtn = document.getElementById('video-toggle-btn');
+            
+            if (isCameraOff) {
+                videoBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+                videoBtn.classList.add('off');
+                showNotification('Камера выключена', 'info');
+            } else {
+                videoBtn.innerHTML = '<i class="fas fa-video"></i>';
+                videoBtn.classList.remove('off');
+                showNotification('Камера включена', 'info');
+            }
+        }
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
@@ -3765,8 +3842,13 @@
                 endCall();
             });
 
+            // Обработчики для кнопок управления звонком
             document.getElementById('mute-call-btn').addEventListener('click', function() {
-                toggleMuteCall();
+                toggleMicrophone();
+            });
+            
+            document.getElementById('video-toggle-btn').addEventListener('click', function() {
+                toggleCamera();
             });
 
             // Отправка сообщений
@@ -4442,11 +4524,6 @@
             await loadUserChats();
         }
 
-        function playVoiceMessage(url) {
-            const audio = new Audio(url);
-            audio.play();
-        }
-
         // Рисование
         function initDrawingCanvas() {
             ctx.fillStyle = 'var(--input-blue)';
@@ -4660,6 +4737,13 @@
             document.getElementById('decline-call-btn').style.display = 'none';
             document.getElementById('end-call-btn').style.display = 'flex';
             document.getElementById('mute-call-btn').style.display = 'flex';
+            document.getElementById('video-toggle-btn').style.display = 'flex';
+            
+            // Сбрасываем состояния при начале звонка
+            isMicrophoneMuted = false;
+            isCameraOff = false;
+            document.getElementById('mute-call-btn').classList.remove('muted');
+            document.getElementById('video-toggle-btn').classList.remove('off');
             
             callContainer.style.display = 'flex';
             
@@ -4684,6 +4768,13 @@
             document.getElementById('decline-call-btn').style.display = 'none';
             document.getElementById('end-call-btn').style.display = 'flex';
             document.getElementById('mute-call-btn').style.display = 'flex';
+            document.getElementById('video-toggle-btn').style.display = 'flex';
+            
+            // Сбрасываем состояния при принятии звонка
+            isMicrophoneMuted = false;
+            isCameraOff = false;
+            document.getElementById('mute-call-btn').classList.remove('muted');
+            document.getElementById('video-toggle-btn').classList.remove('off');
             
             startCallTimer();
         }
@@ -4697,22 +4788,13 @@
             isInCall = false;
             callContainer.style.display = 'none';
             
+            // Скрываем кнопки управления
+            document.getElementById('mute-call-btn').style.display = 'none';
+            document.getElementById('video-toggle-btn').style.display = 'none';
+            
             if (callTimer) {
                 clearInterval(callTimer);
                 callTimer = null;
-            }
-        }
-
-        function toggleMuteCall() {
-            const muteBtn = document.getElementById('mute-call-btn');
-            const isMuted = muteBtn.innerHTML.includes('slash');
-            
-            if (isMuted) {
-                muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-                showNotification('Микрофон выключен', 'info');
-            } else {
-                muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-                showNotification('Микрофон включен', 'info');
             }
         }
 
