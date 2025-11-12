@@ -1,961 +1,1175 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="overflow-x-hidden">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игнат - Безопасный и быстрый мессенджер</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Игнат — современный мессенджер</title>
+    <meta name="description" content="Игнат — платформа для общения: сообщения, звонки, безопасность и минимализм.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Все стили остаются без изменений */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
             --primary-blue: #0066FF;
             --secondary-blue: #00D4FF;
             --dark-blue: #0A0F2D;
             --card-blue: #1A1F3E;
             --input-blue: #252A4A;
-            --text-white: #FFFFFF;
-            --text-gray: #A0A8D0;
-            --accent-purple: #8A2BE2;
-            --online-green: #00FF88;
-            --idle-yellow: #FFAA00;
-            --dnd-red: #FF4444;
-            --offline-gray: #A0A8D0;
-            --success-green: #00CC66;
-            --warning-orange: #FFAA00;
-            --shadow-blue: rgba(0, 102, 255, 0.3);
-        }
-
-        /* Светлая тема */
-        [data-theme="light"] {
-            --primary-blue: #0066FF;
-            --secondary-blue: #00A3CC;
-            --dark-blue: #F5F7FF;
-            --card-blue: #FFFFFF;
-            --input-blue: #F8F9FF;
-            --text-white: #2D3748;
-            --text-gray: #718096;
-            --accent-purple: #8A2BE2;
-            --online-green: #00CC66;
-            --idle-yellow: #DD6B20;
-            --dnd-red: #E53E3E;
-            --offline-gray: #718096;
-            --success-green: #38A169;
-            --warning-orange: #DD6B20;
-            --shadow-blue: rgba(0, 102, 255, 0.15);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            --accent-green: #00FF55;
+            --text: #f8fafc;
+            --text-secondary: #cbd5e1;
         }
 
         body {
-            background: linear-gradient(135deg, var(--dark-blue) 0%, #151A3A 100%);
-            color: var(--text-white);
-            min-height: 100vh;
+            background: var(--dark-blue);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             overflow-x: hidden;
+            line-height: 1.6;
+            overflow-y: auto;
+            height: 100%;
         }
 
-        [data-theme="light"] body {
-            background: linear-gradient(135deg, var(--dark-blue) 0%, #E6EEFF 100%);
+        html {
+            overflow-y: scroll;
+            scroll-behavior: smooth;
         }
 
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        /* Анимации */
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
-        /* Остальные стили остаются без изменений */
-        /* ... */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(80px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
 
-        /* Новые стили для разрешений */
-        .permission-modal {
-            display: none;
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-80px) rotate(-5deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(80px) rotate(5deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            33% {
+                transform: translateY(-20px) rotate(2deg);
+            }
+            66% {
+                transform: translateY(-10px) rotate(-2deg);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(0, 102, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 102, 255, 0.7),
+                            0 0 30px rgba(0, 102, 255, 0.4);
+            }
+        }
+
+        @keyframes slideUpWords {
+            0% {
+                opacity: 0;
+                transform: translateY(100px) scale(0.8);
+                filter: blur(10px);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateY(-20px) scale(1.1);
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes neonGlow {
+            0%, 100% {
+                text-shadow: 0 0 3px var(--secondary-blue),
+                             0 0 6px var(--secondary-blue),
+                             0 0 9px var(--secondary-blue),
+                             0 0 12px var(--primary-blue);
+            }
+            50% {
+                text-shadow: 0 0 6px var(--secondary-blue),
+                             0 0 12px var(--secondary-blue),
+                             0 0 18px var(--secondary-blue),
+                             0 0 24px var(--primary-blue);
+            }
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                border-color: rgba(0, 102, 255, 0.4);
+                box-shadow: 0 0 5px rgba(0, 102, 255, 0.2);
+            }
+            50% {
+                border-color: rgba(0, 212, 255, 0.6);
+                box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+            }
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes scrollReveal {
+            from {
+                opacity: 0;
+                transform: translateY(100px) scale(0.9);
+                filter: blur(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes scrollRevealLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px) rotate(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(0);
+            }
+        }
+
+        @keyframes scrollRevealRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px) rotate(10deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(0);
+            }
+        }
+
+        @keyframes clickParticle {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--rotate));
+            }
+        }
+
+        @keyframes underlineDraw {
+            0% {
+                stroke-dasharray: 0 1;
+            }
+            100% {
+                stroke-dasharray: 1 1;
+            }
+        }
+
+        /* Классы анимаций */
+        .animate-slide-in-top {
+            animation: slideInFromTop 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            opacity: 0;
+        }
+
+        .animate-fadeInLeft {
+            animation: fadeInLeft 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            opacity: 0;
+        }
+
+        .animate-fadeInRight {
+            animation: fadeInRight 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            opacity: 0;
+        }
+
+        .animate-float {
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        .animate-slide-up-words {
+            animation: slideUpWords 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .animate-neon-glow {
+            animation: neonGlow 2s ease-in-out infinite;
+        }
+
+        .animate-border-glow {
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        .animate-wave {
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        .animate-underline-draw {
+            animation: underlineDraw 1.5s ease-out forwards;
+        }
+
+        /* Классы для анимаций при скролле */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(100px) scale(0.9);
+            filter: blur(5px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal-left {
+            opacity: 0;
+            transform: translateX(-100px) rotate(-10deg);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal-right {
+            opacity: 0;
+            transform: translateX(100px) rotate(10deg);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .scroll-reveal.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        .scroll-reveal-left.active {
+            opacity: 1;
+            transform: translateX(0) rotate(0);
+        }
+
+        .scroll-reveal-right.active {
+            opacity: 1;
+            transform: translateX(0) rotate(0);
+        }
+
+        /* Стили для частиц при клике */
+        .click-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            border-radius: 50%;
+            animation: clickParticle 1s ease-out forwards;
+        }
+
+        /* Специальные стили для подчеркивания */
+        .underlined-text {
+            position: relative;
+            display: inline-block;
+        }
+
+        .underline-svg {
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 100%;
+            height: 15px;
+            stroke: var(--accent-green);
+            stroke-width: 8;
+            stroke-linecap: round;
+            fill: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .underlined-text:hover .underline-svg {
+            opacity: 1;
+            animation: underlineDraw 1.5s ease-out forwards;
+        }
+
+        /* Анимированный фон */
+        .animated-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 3000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(129, 140, 248, 0.05) 0%, transparent 20%);
         }
 
-        .permission-content {
-            background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            animation: slideIn 0.3s ease-out;
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0, 102, 255, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 102, 255, 0.08) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -3;
+        }
+
+        /* Навигация */
+        .animated-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 15, 45, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 50px;
+            padding: 8px;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 8px 32px rgba(0, 102, 255, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0;
+            min-width: fit-content;
+            max-width: 90%;
+        }
+
+        .nav-highlight {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #818cf8 100%);
+            border-radius: 25px;
+            z-index: 1;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 4px 20px rgba(0, 102, 255, 0.4);
+            opacity: 0;
+        }
+
+        .nav-highlight.active {
+            opacity: 1;
+        }
+
+        /* Герой секция */
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 102, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(129, 140, 248, 0.15) 0%, transparent 50%);
+            z-index: -2;
+        }
+
+        /* Карточки */
+        .feature-card {
+            background: var(--card-blue);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 25px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             backdrop-filter: blur(10px);
-            text-align: center;
         }
 
-        .permission-icon {
-            font-size: 4rem;
-            color: var(--primary-blue);
-            margin-bottom: 20px;
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            opacity: 0.1;
+            transition: left 0.4s ease;
         }
 
-        .permission-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .feature-card:hover::before {
+            left: 0;
         }
 
-        .permission-text {
-            color: var(--text-gray);
-            margin-bottom: 25px;
-            line-height: 1.6;
+        .feature-card:hover {
+            transform: translateY(-15px) rotate(1deg);
+            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.2);
+            border-color: var(--primary-blue);
         }
 
-        .permission-steps {
-            text-align: left;
-            margin-bottom: 25px;
-            background: var(--input-blue);
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .permission-step {
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
-            color: var(--text-white);
-        }
-
-        .permission-step i {
-            color: var(--primary-blue);
-            margin-right: 10px;
-            width: 20px;
-        }
-
-        .permission-actions {
-            display: flex;
-            gap: 15px;
             justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: var(--card-blue);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item.active {
+            border-color: var(--primary-blue);
+            box-shadow: 0 8px 20px rgba(0, 102, 255, 0.2);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 2rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            text-align: left;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            padding: 0 2rem;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 2rem 2rem;
         }
 
         /* Адаптивность */
         @media (max-width: 768px) {
-            .permission-content {
-                padding: 20px;
+            .animated-nav {
+                top: 15px;
+                padding: 6px;
+                max-width: 95%;
             }
             
-            .permission-actions {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(10, 15, 45, 0.98);
+                backdrop-filter: blur(20px);
+                border-radius: 20px;
+                padding: 1rem;
+                margin-top: 8px;
                 flex-direction: column;
+                gap: 8px;
+                border: 1px solid rgba(0, 102, 255, 0.3);
+                box-shadow: 0 8px 32px rgba(0, 102, 255, 0.2);
+            }
+            
+            .nav-menu.active {
+                display: flex;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
             }
         }
     </style>
 </head>
-<body>
-    <!-- Существующая структура HTML остается без изменений -->
-    <!-- ... -->
+<body class="bg-[#0A0F2D] text-white font-['Inter']">
+    <!-- Анимированный фон -->
+    <div class="animated-background"></div>
+    <div class="grid-bg"></div>
 
-    <!-- Модальное окно для разрешений -->
-    <div class="permission-modal" id="permission-modal">
-        <div class="permission-content">
-            <div class="permission-icon">
-                <i class="fas fa-microphone"></i>
-            </div>
-            <h3 class="permission-title">Требуется доступ к микрофону</h3>
-            <p class="permission-text">
-                Для записи голосовых сообщений и звонков необходимо разрешить доступ к микрофону.
-            </p>
-            
-            <div class="permission-steps">
-                <div class="permission-step">
-                    <i class="fas fa-camera"></i>
-                    <span>Нажмите на значок камеры или микрофона в адресной строке браузера</span>
-                </div>
-                <div class="permission-step">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Выберите "Разрешить" для доступа к микрофону</span>
-                </div>
-                <div class="permission-step">
-                    <i class="fas fa-redo"></i>
-                    <span>Обновите страницу после предоставления разрешения</span>
-                </div>
-            </div>
+    <!-- Навигация -->
+    <nav class="animated-nav animate-slide-in-top">
+        <a href="/" class="text-xl font-black bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent px-4 py-2 mr-2 transition-all duration-300 hover:scale-105 rounded-full no-underline">
+            <i class="fas fa-comments mr-2"></i>
+            Игнат
+        </a>
+        
+        <div class="nav-menu relative flex items-center gap-1 flex-1 justify-center" id="navMenu">
+            <div class="nav-highlight" id="navHighlight"></div>
+            <a href="#features" class="nav-item px-5 py-2 text-white no-underline font-medium text-sm rounded-full transition-all duration-300 cursor-pointer z-10 text-center" data-nav-item>Возможности</a>
+            <a href="#protocol" class="nav-item px-5 py-2 text-white no-underline font-medium text-sm rounded-full transition-all duration-300 cursor-pointer z-10 text-center" data-nav-item>Безопасность</a>
+            <a href="#stats" class="nav-item px-5 py-2 text-white no-underline font-medium text-sm rounded-full transition-all duration-300 cursor-pointer z-10 text-center" data-nav-item>Статистика</a>
+            <a href="#faq" class="nav-item px-5 py-2 text-white no-underline font-medium text-sm rounded-full transition-all duration-300 cursor-pointer z-10 text-center" data-nav-item>Вопросы</a>
+            <a href="/ignat" class="nav-cta bg-gradient-to-r from-[#0066FF] to-[#00D4FF] text-white px-6 py-2.5 rounded-full no-underline font-semibold transition-all duration-300 border-none cursor-pointer relative overflow-hidden text-sm ml-2 animate-pulse-glow">
+                <i class="fas fa-comment mr-1.5"></i>
+                Начать общение
+            </a>
+        </div>
 
-            <div class="permission-actions">
-                <button class="btn-3d btn-3d-primary" id="retry-permission-btn">Повторить попытку</button>
-                <button class="btn-3d btn-3d-secondary" id="close-permission-btn">Позже</button>
+        <button class="mobile-menu-btn hidden flex-col items-center justify-center w-10 h-10 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] border-none rounded-full cursor-pointer p-2 ml-2" id="mobileMenuBtn">
+            <span class="menu-line block w-5 h-0.5 bg-white my-0.5 transition-all duration-300 rounded-sm"></span>
+            <span class="menu-line block w-5 h-0.5 bg-white my-0.5 transition-all duration-300 rounded-sm"></span>
+            <span class="menu-line block w-5 h-0.5 bg-white my-0.5 transition-all duration-300 rounded-sm"></span>
+        </button>
+    </nav>
+
+    <!-- Основной контент -->
+    <main id="content">
+        <!-- Герой секция -->
+        <section class="hero min-h-screen flex items-center relative overflow-hidden pt-24">
+            <div class="hero-bg"></div>
+            <div class="container max-w-6xl mx-auto px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="animate-fadeInLeft">
+                        <div class="text-lg text-[#00D4FF] mb-4 font-semibold uppercase tracking-wider animate-neon-glow">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Ультрасовременное общение
+                        </div>
+                        
+                        <h1 class="text-5xl lg:text-6xl xl:text-7xl font-black leading-tight mb-8">
+                            <span class="block mb-4 text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r from-white via-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent animate-slide-up-words" style="animation-delay: 0.2s;">
+                                Место, где
+                            </span>
+                            <span class="block mb-4 text-3xl lg:text-4xl xl:text-5xl font-bold text-white animate-slide-up-words" style="animation-delay: 0.5s;">
+                                <span class="underlined-text relative">
+                                    идеи
+                                    <svg class="underline-svg" viewBox="0 0 180 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 11V11C11.4074 6.78287 21.9366 5.76066 31.9795 8.08946L37.3051 9.32437C46.29 11.4078 55.6551 11.1933 64.5351 8.70066L65.3052 8.48451C74.5859 5.8794 84.4077 5.90219 93.6762 8.55034V8.55034C102.723 11.1351 112.301 11.2198 121.392 8.79559L137.5 4.5" stroke="#00FF55" stroke-width="8" fill="none" stroke-linecap="round"></path>
+                                    </svg>
+                                </span> становятся
+                            </span>
+                            <span class="block text-3xl lg:text-4xl xl:text-5xl font-bold text-white animate-slide-up-words" style="animation-delay: 0.8s;">
+                                <span class="underlined-text relative">
+                                    реальностью
+                                    <svg class="underline-svg" viewBox="0 0 180 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 11V11C11.4074 6.78287 21.9366 5.76066 31.9795 8.08946L37.3051 9.32437C46.29 11.4078 55.6551 11.1933 64.5351 8.70066L65.3052 8.48451C74.5859 5.8794 84.4077 5.90219 93.6762 8.55034V8.55034C102.723 11.1351 112.301 11.2198 121.392 8.79559L137.5 4.5" stroke="#00FF55" stroke-width="8" fill="none" stroke-linecap="round"></path>
+                                    </svg>
+                                </span>
+                            </span>
+                        </h1>
+                        
+                        <p class="text-xl text-[#cbd5e1] mb-8 leading-relaxed">
+                            Игнат — это квантовый скачок в мире мессенджеров. Молниеносная скорость, непробиваемая безопасность и космический дизайн. 
+                            <span class="text-[#00D4FF] font-semibold">Будущее общения уже здесь.</span>
+                        </p>
+                        
+                        <div class="flex gap-4 flex-wrap items-center">
+                            <a href="https://t.me/ignat_chat" class="nav-cta bg-gradient-to-r from-[#0066FF] via-[#3385ff] to-[#00D4FF] text-white px-6 py-3 rounded-full no-underline font-semibold transition-all duration-300 border-none cursor-pointer relative overflow-hidden animate-pulse" target="_blank">
+                                <i class="fab fa-telegram mr-2"></i>
+                                Присоединиться
+                            </a>
+                            <a href="#features" class="nav-cta bg-transparent border-2 border-[#0066FF] text-[#0066FF] px-6 py-3 rounded-full no-underline font-semibold transition-all duration-300 cursor-pointer relative overflow-hidden">
+                                <i class="fas fa-play mr-2"></i>
+                                Смотреть демо
+                            </a>
+                            <div class="flex items-center gap-2 text-[#cbd5e1]">
+                                <div class="w-2.5 h-2.5 bg-[#00D4FF] rounded-full animate-pulse"></div>
+                                <span>Онлайн: 2.4K+</span>
+                            </div>
+                        </div>
+
+                        <!-- Дополнительные статистики -->
+                        <div class="grid grid-cols-3 gap-4 mt-8">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-[#0066FF]">10x</div>
+                                <div class="text-sm text-[#cbd5e1]">Быстрее</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-[#00D4FF]">∞</div>
+                                <div class="text-sm text-[#cbd5e1]">Безопасность</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-[#818cf8]">24/7</div>
+                                <div class="text-sm text-[#cbd5e1]">Поддержка</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="animate-fadeInRight relative">
+                        <!-- Анимированный чат интерфейс -->
+                        <div class="bg-gradient-to-r from-[#0066FF] to-[#00D4FF] p-8 rounded-3xl rotate-2 animate-float animate-border-glow">
+                            <div class="bg-[#1A1F3E] p-8 rounded-3xl -rotate-2 border border-[rgba(0,102,255,0.3)] relative overflow-hidden">
+                                <!-- Анимированные элементы чата -->
+                                <div class="absolute top-2.5 right-2.5">
+                                    <div class="w-2.5 h-2.5 bg-[#00D4FF] rounded-full animate-pulse"></div>
+                                </div>
+                                
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-12 h-12 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] rounded-full flex items-center justify-center animate-pulse">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-lg">Мария</div>
+                                        <div class="text-sm text-[#00D4FF] flex items-center gap-2">
+                                            <div class="w-1.5 h-1.5 bg-[#00D4FF] rounded-full animate-pulse"></div>
+                                            онлайн
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-[#252A4A] p-5 rounded-xl mb-4 border-l-4 border-[#66e0ff] animate-fadeInLeft">
+                                    Привет! Как насчёт встречи завтра? У меня есть интересные идеи для проекта 🚀
+                                </div>
+                                
+                                <div class="bg-[#0066FF] p-5 rounded-xl ml-8 border-l-4 border-[#00D4FF] animate-fadeInRight" style="animation-delay: 0.5s;">
+                                    Отличная идея! В 15:00 подходит? Могу показать новые прототипы 💫
+                                </div>
+
+                                <!-- Индикатор набора сообщения -->
+                                <div class="flex items-center gap-2 mt-4 p-4 bg-[#252A4A] rounded-xl animate-pulse">
+                                    <div class="flex gap-1">
+                                        <div class="w-1.5 h-1.5 bg-[#0066FF] rounded-full animate-wave"></div>
+                                        <div class="w-1.5 h-1.5 bg-[#0066FF] rounded-full animate-wave" style="animation-delay: 0.2s;"></div>
+                                        <div class="w-1.5 h-1.5 bg-[#0066FF] rounded-full animate-wave" style="animation-delay: 0.4s;"></div>
+                                    </div>
+                                    <span class="text-[#cbd5e1] text-sm">Мария печатает...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Особенности -->
+        <section id="features" class="py-32">
+            <div class="container max-w-6xl mx-auto px-8">
+                <div class="scroll-reveal text-center mb-16">
+                    <h2 class="text-5xl font-black mb-4 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent">
+                        Космические возможности
+                    </h2>
+                    <p class="text-xl text-[#cbd5e1] max-w-2xl mx-auto">
+                        Все необходимое для межгалактического общения в одном месте
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
+                    <div class="feature-card scroll-reveal-left" style="animation-delay: 0.1s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt text-white"></i>
+                        </div>
+                        <h3 class="text-2xl mb-4 font-semibold">Молниеносная скорость</h3>
+                        <p class="text-[#cbd5e1] leading-relaxed">
+                            Сообщения доставляются быстрее скорости света. Никаких задержек даже в межгалактическом пространстве.
+                        </p>
+                    </div>
+
+                    <div class="feature-card scroll-reveal" style="animation-delay: 0.2s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt text-white"></i>
+                        </div>
+                        <h3 class="text-2xl mb-4 font-semibold">Квантовая безопасность</h3>
+                        <p class="text-[#cbd5e1] leading-relaxed">
+                            Шифрование, которое не под силу даже квантовым компьютерам. Ваши переписки защищены на уровне черных дыр.
+                        </p>
+                    </div>
+
+                    <div class="feature-card scroll-reveal-right" style="animation-delay: 0.3s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot text-white"></i>
+                        </div>
+                        <h3 class="text-2xl mb-4 font-semibold">Искусственный интеллект</h3>
+                        <p class="text-[#cbd5e1] leading-relaxed">
+                            AI-ассистент с интеллектом нейросетей. Умные ответы, перевод на 150+ языков и предсказание мыслей.
+                        </p>
+                    </div>
+
+                    <div class="feature-card scroll-reveal" style="animation-delay: 0.4s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-infinity text-white"></i>
+                        </div>
+                        <h3 class="text-2xl mb-4 font-semibold">Безлимитная вселенная</h3>
+                        <p class="text-[#cbd5e1] leading-relaxed">
+                            Бесконечное пространство для общения. Отправляйте файлы любого размера и создавайте чаты без ограничений.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Протокол безопасности -->
+        <section id="protocol" class="py-40 relative bg-gradient-to-br from-[rgba(10,15,45,0.95)] to-[rgba(0,102,255,0.2)] overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%230066FF\" fill-opacity=\"0.2\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+            <div class="container max-w-6xl mx-auto px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="scroll-reveal-left">
+                        <h2 class="text-5xl font-black mb-6">
+                            <span class="bg-gradient-to-r from-[#00D4FF] to-[#0066FF] bg-clip-text text-transparent">Безопасность</span> на уровне NASA
+                        </h2>
+                        <p class="text-xl text-[#cbd5e1] mb-8 leading-relaxed">
+                            Наш протокол использует технологии, которые будут актуальны через 100 лет. 
+                            Квантово-устойчивое шифрование и децентрализованная архитектура.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-[#1A1F3E] p-6 rounded-xl border-l-4 border-[#00D4FF] transition-all duration-300 hover:-translate-y-1" class="scroll-reveal" style="animation-delay: 0.1s;">
+                                <i class="fas fa-lock text-[#00D4FF] mb-4 text-2xl transition-all duration-300 hover:scale-110"></i>
+                                <div class="font-semibold mb-2">Сквозное шифрование</div>
+                                <div class="text-sm text-[#cbd5e1]">Только вы и получатель можете читать сообщения</div>
+                            </div>
+                            <div class="bg-[#1A1F3E] p-6 rounded-xl border-l-4 border-[#0066FF] transition-all duration-300 hover:-translate-y-1" class="scroll-reveal" style="animation-delay: 0.2s;">
+                                <i class="fas fa-user-shield text-[#0066FF] mb-4 text-2xl transition-all duration-300 hover:scale-110"></i>
+                                <div class="font-semibold mb-2">Защита от MITM</div>
+                                <div class="text-sm text-[#cbd5e1]">Предотвращение атак "человек посередине"</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scroll-reveal-right text-center">
+                        <div class="bg-[#1A1F3E] p-16 px-12 rounded-3xl inline-block border border-[rgba(0,102,255,0.3)] relative overflow-hidden">
+                            <div class="absolute -top-12 -right-12 w-24 h-24 bg-[#00D4FF] rounded-full opacity-10"></div>
+                            <div class="absolute -bottom-8 -left-8 w-20 h-20 bg-[#0066FF] rounded-full opacity-10"></div>
+                            <i class="fas fa-shield-alt text-6xl text-[#00D4FF] mb-8 animate-float"></i>
+                            <div class="text-4xl font-bold mb-4">Quantum-Safe</div>
+                            <div class="text-[#cbd5e1] text-xl">Протокол будущего уже сегодня</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Статистика -->
+        <section id="stats" class="py-32">
+            <div class="container max-w-6xl mx-auto px-8">
+                <div class="scroll-reveal text-center mb-16">
+                    <h2 class="text-5xl font-black mb-4 bg-gradient-to-r from-[#818cf8] to-[#00D4FF] bg-clip-text text-transparent">
+                        В цифрах
+                    </h2>
+                    <p class="text-xl text-[#cbd5e1] max-w-2xl mx-auto">
+                        Наша производительность говорит сама за себя
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
+                    <div class="stat-item text-center p-8 bg-[#1A1F3E] rounded-2xl border border-[rgba(0,102,255,0.3)] transition-all duration-300 relative overflow-hidden scroll-reveal" style="animation-delay: 0.1s;">
+                        <div class="stat-number text-5xl font-black bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent mb-2">99.9%</div>
+                        <div class="text-[#cbd5e1] font-semibold">Аптайм</div>
+                    </div>
+                    <div class="stat-item text-center p-8 bg-[#1A1F3E] rounded-2xl border border-[rgba(0,102,255,0.3)] transition-all duration-300 relative overflow-hidden scroll-reveal" style="animation-delay: 0.2s;">
+                        <div class="stat-number text-5xl font-black bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent mb-2">256-bit</div>
+                        <div class="text-[#cbd5e1] font-semibold">Шифрование</div>
+                    </div>
+                    <div class="stat-item text-center p-8 bg-[#1A1F3E] rounded-2xl border border-[rgba(0,102,255,0.3)] transition-all duration-300 relative overflow-hidden scroll-reveal" style="animation-delay: 0.3s;">
+                        <div class="stat-number text-5xl font-black bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent mb-2">0.1s</div>
+                        <div class="text-[#cbd5e1] font-semibold">Задержка</div>
+                    </div>
+                    <div class="stat-item text-center p-8 bg-[#1A1F3E] rounded-2xl border border-[rgba(0,102,255,0.3)] transition-all duration-300 relative overflow-hidden scroll-reveal" style="animation-delay: 0.4s;">
+                        <div class="stat-number text-5xl font-black bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent mb-2">∞</div>
+                        <div class="text-[#cbd5e1] font-semibold">Сообщения</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq" class="py-32">
+            <div class="container max-w-6xl mx-auto px-8">
+                <div class="scroll-reveal text-center mb-16">
+                    <h2 class="text-5xl font-black mb-4 bg-gradient-to-r from-[#0066FF] to-[#66e0ff] bg-clip-text text-transparent">
+                        Частые вопросы
+                    </h2>
+                    <p class="text-xl text-[#cbd5e1]">
+                        Всё, что вы хотели знать об Игнат
+                    </p>
+                </div>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="faq-item scroll-reveal" style="animation-delay: 0.1s;">
+                        <button class="faq-question">
+                            Что такое Игнат и чем он отличается от других мессенджеров?
+                            <i class="fas fa-plus transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Игнат — это мессенджер нового поколения с космическим дизайном и технологиями будущего. Мы сочетаем молниеносную скорость, квантовую безопасность и искусственный интеллект в одном приложении.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item scroll-reveal" style="animation-delay: 0.2s;">
+                        <button class="faq-question">
+                            Насколько безопасен Игнат и какие технологии используются?
+                            <i class="fas fa-plus transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Мы используем квантово-устойчивое шифрование, которое защищает ваши данные даже от атак квантовых компьютеров. Все сообщения шифруются на устройстве и расшифровываются только у получателя.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item scroll-reveal" style="animation-delay: 0.3s;">
+                        <button class="faq-question">
+                            Будет ли Игнат бесплатным и какие есть ограничения?
+                            <i class="fas fa-plus transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Да, основная функциональность Игнат будет полностью бесплатной. Мы верим, что безопасное общение должно быть доступно каждому. Премиум-функции будут доступны по подписке.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item scroll-reveal" style="animation-delay: 0.4s;">
+                        <button class="faq-question">
+                            На каких платформах будет доступен Игнат?
+                            <i class="fas fa-plus transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Игнат будет доступен на всех основных платформах: iOS, Android, Windows, macOS и Linux. Также будет веб-версия. Все версии будут полностью синхронизированы между собой.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Футер -->
+    <footer class="py-16 bg-[#0A0F2D] border-t border-[rgba(0,102,255,0.3)] mt-24">
+        <div class="container max-w-6xl mx-auto px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div class="scroll-reveal-left">
+                    <div class="text-2xl font-black mb-4 bg-gradient-to-r from-[#0066FF] to-[#00D4FF] bg-clip-text text-transparent">
+                        Игнат
+                    </div>
+                    <p class="text-[#cbd5e1] leading-relaxed">
+                        Мессенджер нового поколения с космическим дизайном и технологиями будущего.
+                    </p>
+                    <div class="flex gap-4 mt-6">
+                        <a href="#" class="text-[#cbd5e1] text-2xl transition-all duration-300 animate-float hover:text-[#0066FF]"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="text-[#cbd5e1] text-2xl transition-all duration-300 animate-float hover:text-[#66e0ff]"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-[#cbd5e1] text-2xl transition-all duration-300 animate-float hover:text-[#00D4FF]"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="scroll-reveal">
+                    <div class="font-bold mb-6 text-xl">Навигация</div>
+                    <div class="flex flex-col gap-3">
+                        <a href="#features" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Возможности</a>
+                        <a href="#protocol" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Безопасность</a>
+                        <a href="#stats" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Статистика</a>
+                        <a href="#faq" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Вопросы</a>
+                    </div>
+                </div>
+                <div class="scroll-reveal">
+                    <div class="font-bold mb-6 text-xl">Ресурсы</div>
+                    <div class="flex flex-col gap-3">
+                        <a href="#" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Документация</a>
+                        <a href="#" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Блог</a>
+                        <a href="#" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Для разработчиков</a>
+                        <a href="#" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">Карьера</a>
+                    </div>
+                </div>
+                <div class="scroll-reveal-right">
+                    <div class="font-bold mb-6 text-xl">Контакты</div>
+                    <div class="flex flex-col gap-3">
+                        <a href="mailto:hello@ignat.chat" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">
+                            <i class="fas fa-envelope mr-2"></i>hello@ignat.chat
+                        </a>
+                        <a href="https://t.me/ignat_chat" class="text-[#cbd5e1] no-underline transition-colors duration-300 hover:text-[#00D4FF] hover:-translate-y-0.5">
+                            <i class="fab fa-telegram mr-2"></i>Telegram канал
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-[rgba(0,102,255,0.3)] pt-8 text-center text-[#cbd5e1] scroll-reveal">
+                <p>© 2025 Игнат. Все права защищены. Сделано с 💙 для межгалактического общения</p>
             </div>
         </div>
-    </div>
+    </footer>
 
     <script>
-        // Упрощенная база данных на localStorage
-        class IgnatDB {
-            constructor() {
-                this.storage = localStorage;
-                this.init();
+        // Инициализация навигации
+        function initAnimatedNav() {
+            const nav = document.querySelector('.animated-nav');
+            const navMenu = document.getElementById('navMenu');
+            const navItems = document.querySelectorAll('[data-nav-item]');
+            const navHighlight = document.getElementById('navHighlight');
+            let activeIndex = 0;
+
+            function updateHighlight(index) {
+                const activeItem = navItems[index];
+                if (activeItem && navHighlight) {
+                    const rect = activeItem.getBoundingClientRect();
+                    const navRect = navMenu.getBoundingClientRect();
+                    
+                    navHighlight.style.width = `${rect.width}px`;
+                    navHighlight.style.left = `${rect.left - navRect.left}px`;
+                    navHighlight.classList.add('active');
+                    activeIndex = index;
+                }
             }
 
-            init() {
-                this.restoreSession();
-            }
-
-            saveSession(user) {
-                this.storage.setItem('ignat_current_user', JSON.stringify(user));
-            }
-
-            getCurrentSession() {
-                const session = this.storage.getItem('ignat_current_user');
-                return session ? JSON.parse(session) : null;
-            }
-
-            clearSession() {
-                this.storage.removeItem('ignat_current_user');
-            }
-
-            restoreSession() {
-                const currentUser = this.getCurrentSession();
-                if (currentUser) {
-                    currentUser.lastSeen = new Date().toISOString();
-                    currentUser.isOnline = true;
-                    this.saveSession(currentUser);
-                    this.updateUser(currentUser.id, {
-                        lastSeen: currentUser.lastSeen,
-                        isOnline: true
+            function initHighlight() {
+                if (navItems.length > 0 && navHighlight) {
+                    setTimeout(() => {
+                        updateHighlight(0);
+                    }, 100);
+                    
+                    window.addEventListener('resize', () => {
+                        updateHighlight(activeIndex);
                     });
                 }
-                return currentUser;
             }
 
-            async addUser(user) {
-                const users = this.getUsers();
-                users.push(user);
-                this.storage.setItem('ignat_users', JSON.stringify(users));
-                this.saveSession(user);
-                return user.id;
-            }
+            navItems.forEach((item, index) => {
+                item.addEventListener('mouseenter', () => {
+                    updateHighlight(index);
+                });
 
-            getUsers() {
-                return JSON.parse(this.storage.getItem('ignat_users') || '[]');
-            }
-
-            async getUserByUsername(username) {
-                const users = this.getUsers();
-                return users.find(user => user.username === username);
-            }
-
-            async getUserById(userId) {
-                const users = this.getUsers();
-                return users.find(user => user.id === userId);
-            }
-
-            async getAllUsers() {
-                return this.getUsers();
-            }
-
-            async searchUsers(query) {
-                const users = this.getUsers();
-                const searchTerm = query.toLowerCase();
-                return users.filter(user => 
-                    user.username.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            async updateUser(userId, updates) {
-                const users = this.getUsers();
-                const userIndex = users.findIndex(user => user.id === userId);
-                if (userIndex !== -1) {
-                    users[userIndex] = { ...users[userIndex], ...updates };
-                    this.storage.setItem('ignat_users', JSON.stringify(users));
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    updateHighlight(index);
                     
-                    const currentUser = this.getCurrentSession();
-                    if (currentUser && currentUser.id === userId) {
-                        this.saveSession(users[userIndex]);
+                    const targetId = item.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        const offsetTop = targetSection.offsetTop - 100;
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
                     }
+
+                    if (window.innerWidth <= 768) {
+                        navMenu.classList.remove('active');
+                        document.getElementById('mobileMenuBtn').classList.remove('active');
+                    }
+                });
+            });
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+
+                const sections = document.querySelectorAll('section');
+                let currentSection = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 150;
+                    if (window.scrollY >= sectionTop) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+
+                navItems.forEach((item, index) => {
+                    if (item.getAttribute('href') === `#${currentSection}`) {
+                        updateHighlight(index);
+                    }
+                });
+            });
+
+            setTimeout(initHighlight, 300);
+        }
+
+        // Мобильное меню
+        function initMobileMenu() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const navMenu = document.getElementById('navMenu');
+
+            if (mobileMenuBtn && navMenu) {
+                mobileMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mobileMenuBtn.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!navMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                        mobileMenuBtn.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    }
+                });
+
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        mobileMenuBtn.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    });
+                });
+            }
+        }
+
+        // FAQ
+        function initFAQ() {
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const button = item.querySelector('.faq-question');
+                const icon = button.querySelector('i');
+                
+                button.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
                     
-                    return users[userIndex];
-                }
-                return null;
-            }
+                    faqItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('i').classList.remove('fa-minus');
+                            otherItem.querySelector('i').classList.add('fa-plus');
+                        }
+                    });
+                    
+                    if (!isActive) {
+                        item.classList.add('active');
+                        icon.classList.remove('fa-plus');
+                        icon.classList.add('fa-minus');
+                    } else {
+                        item.classList.remove('active');
+                        icon.classList.remove('fa-minus');
+                        icon.classList.add('fa-plus');
+                    }
+                });
+            });
+        }
 
-            async getSettings(userId) {
-                const settings = JSON.parse(this.storage.getItem('ignat_settings') || '{}');
-                return settings[userId] || {};
-            }
+        // Анимация появления элементов при скролле
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
 
-            async saveSettings(userId, newSettings) {
-                const settings = JSON.parse(this.storage.getItem('ignat_settings') || '{}');
-                settings[userId] = { ...settings[userId], ...newSettings };
-                this.storage.setItem('ignat_settings', JSON.stringify(settings));
-            }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, observerOptions);
 
-            async addChat(chat) {
-                const chats = this.getChats();
-                chats.push(chat);
-                this.storage.setItem('ignat_chats', JSON.stringify(chats));
-                return chat.id;
-            }
+            const animatedElements = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right');
+            animatedElements.forEach(el => {
+                observer.observe(el);
+            });
+        }
 
-            getChats() {
-                return JSON.parse(this.storage.getItem('ignat_chats') || '[]');
-            }
+        // Частицы при клике мышкой
+        function initClickParticles() {
+            document.addEventListener('click', function(e) {
+                createParticles(e.clientX, e.clientY);
+            });
 
-            async getChat(chatId) {
-                const chats = this.getChats();
-                return chats.find(chat => chat.id === chatId);
-            }
-
-            async getUserChats(userId) {
-                const chats = this.getChats();
-                return chats.filter(chat => 
-                    chat.participants.includes(userId)
-                ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-            }
-
-            async getAllChats() {
-                return this.getChats();
-            }
-
-            async findChatBetweenUsers(user1Id, user2Id) {
-                const chats = this.getChats();
-                return chats.find(chat =>
-                    chat.participants.includes(user1Id) &&
-                    chat.participants.includes(user2Id) &&
-                    chat.participants.length === 2
-                );
-            }
-
-            async updateChat(chatId, updates) {
-                const chats = this.getChats();
-                const chatIndex = chats.findIndex(chat => chat.id === chatId);
-                if (chatIndex !== -1) {
-                    chats[chatIndex] = { ...chats[chatIndex], ...updates };
-                    this.storage.setItem('ignat_chats', JSON.stringify(chats));
-                    return chats[chatIndex];
-                }
-                return null;
-            }
-
-            async addMessage(message) {
-                const messages = this.getMessages();
-                messages.push(message);
-                this.storage.setItem('ignat_messages', JSON.stringify(messages));
-                return message.id;
-            }
-
-            getMessages() {
-                return JSON.parse(this.storage.getItem('ignat_messages') || '[]');
-            }
-
-            async getChatMessages(chatId) {
-                const messages = this.getMessages();
-                return messages
-                    .filter(message => message.chatId === chatId)
-                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            }
-
-            async getLastMessage(chatId) {
-                const messages = await this.getChatMessages(chatId);
-                return messages[messages.length - 1];
-            }
-
-            async updateMessage(messageId, updates) {
-                const messages = this.getMessages();
-                const messageIndex = messages.findIndex(msg => msg.id === messageId);
-                if (messageIndex !== -1) {
-                    messages[messageIndex] = { ...messages[messageIndex], ...updates };
-                    this.storage.setItem('ignat_messages', JSON.stringify(messages));
-                    return messages[messageIndex];
-                }
-                return null;
-            }
-
-            async addFile(file) {
-                const files = this.getFiles();
-                files.push(file);
-                this.storage.setItem('ignat_files', JSON.stringify(files));
-                return file.id;
-            }
-
-            getFiles() {
-                return JSON.parse(this.storage.getItem('ignat_files') || '[]');
-            }
-
-            async getFile(fileId) {
-                const files = this.getFiles();
-                return files.find(file => file.id === fileId);
-            }
-
-            // Методы для работы с голосовыми сообщениями
-            async addVoiceMessage(voiceMessage) {
-                const voiceMessages = this.getVoiceMessages();
-                voiceMessages.push(voiceMessage);
-                this.storage.setItem('ignat_voice_messages', JSON.stringify(voiceMessages));
-                return voiceMessage.id;
-            }
-
-            getVoiceMessages() {
-                return JSON.parse(this.storage.getItem('ignat_voice_messages') || '[]');
-            }
-
-            async getChatVoiceMessages(chatId) {
-                const voiceMessages = this.getVoiceMessages();
-                return voiceMessages.filter(msg => msg.chatId === chatId);
-            }
-
-            // Методы для работы с заблокированными пользователями
-            async blockUser(userId, targetUserId) {
-                const blocked = this.getBlockedUsers();
-                if (!blocked[userId]) {
-                    blocked[userId] = [];
-                }
+            function createParticles(x, y) {
+                const colors = [
+                    '#0066FF', '#00D4FF', '#3385ff', '#66e0ff', '#80eaff', '#818cf8'
+                ];
                 
-                if (!blocked[userId].includes(targetUserId)) {
-                    blocked[userId].push(targetUserId);
-                    this.storage.setItem('ignat_blocked_users', JSON.stringify(blocked));
-                }
-            }
-
-            async unblockUser(userId, targetUserId) {
-                const blocked = this.getBlockedUsers();
-                if (blocked[userId]) {
-                    blocked[userId] = blocked[userId].filter(id => id !== targetUserId);
-                    this.storage.setItem('ignat_blocked_users', JSON.stringify(blocked));
-                }
-            }
-
-            getBlockedUsers() {
-                return JSON.parse(this.storage.getItem('ignat_blocked_users') || '{}');
-            }
-
-            isUserBlocked(userId, targetUserId) {
-                const blocked = this.getBlockedUsers();
-                return blocked[userId] && blocked[userId].includes(targetUserId);
-            }
-
-            getBlockedUsersList(userId) {
-                const blocked = this.getBlockedUsers();
-                return blocked[userId] || [];
-            }
-
-            clearDatabase() {
-                this.storage.removeItem('ignat_users');
-                this.storage.removeItem('ignat_chats');
-                this.storage.removeItem('ignat_messages');
-                this.storage.removeItem('ignat_files');
-                this.storage.removeItem('ignat_voice_messages');
-                this.storage.removeItem('ignat_settings');
-                this.storage.removeItem('ignat_blocked_users');
-                this.storage.removeItem('ignat_wallpaper');
-                this.clearSession();
-            }
-        }
-
-        // Проверка поддержки медиа устройств
-        function checkMediaSupport() {
-            return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-        }
-
-        // Проверка разрешений
-        async function checkPermissions() {
-            try {
-                // Проверяем поддержку API
-                if (!checkMediaSupport()) {
-                    throw new Error('Ваш браузер не поддерживает доступ к медиаустройствам');
-                }
-
-                // Проверяем разрешение на микрофон
-                const microphonePermission = await navigator.permissions.query({ name: 'microphone' });
-                const cameraPermission = await navigator.permissions.query({ name: 'camera' });
+                const particleCount = 12;
                 
-                return {
-                    microphone: microphonePermission.state,
-                    camera: cameraPermission.state,
-                    supported: true
-                };
-            } catch (error) {
-                console.warn('Permission API не поддерживается:', error);
-                return {
-                    microphone: 'prompt',
-                    camera: 'prompt',
-                    supported: false
-                };
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('click-particle');
+                    
+                    const size = Math.random() * 10 + 5;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.background = color;
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 100 + 50;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    const rotate = Math.random() * 360;
+                    
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+                    particle.style.setProperty('--rotate', `${rotate}deg`);
+                    
+                    particle.style.left = `${x - size/2}px`;
+                    particle.style.top = `${y - size/2}px`;
+                    
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 1000);
+                }
             }
         }
-
-        // Функции для работы с разрешениями
-        function showPermissionModal() {
-            document.getElementById('permission-modal').style.display = 'flex';
-        }
-
-        function hidePermissionModal() {
-            document.getElementById('permission-modal').style.display = 'none';
-        }
-
-        // Инициализация
-        const db = new IgnatDB();
-        let currentUser = null;
-        let currentChat = null;
-        let updateInterval = null;
-        let replyingToMessage = null;
-        let pinnedMessage = null;
-        let filesToSend = [];
-
-        // Переменные для голосовых сообщений
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let isRecording = false;
-        let recordingStartTime = null;
-        let recordingTimer = null;
-        let voiceMessages = {};
-
-        // Переменные для звонков
-        let localStream = null;
-        let remoteStream = null;
-        let peerConnection = null;
-        let callTimer = null;
-        let callStartTime = null;
-        let isInCall = false;
-        let isVideoCall = false;
-        let isAudioMuted = false;
-        let isVideoMuted = false;
-
-        // Элементы DOM
-        const landingPage = document.getElementById('landing-page');
-        const authContainer = document.getElementById('auth-container');
-        const messengerContainer = document.getElementById('messenger-container');
-        const settingsWindow = document.getElementById('settings-window');
-        const callContainer = document.getElementById('call-container');
-        const incomingCallNotification = document.getElementById('incoming-call-notification');
-        const permissionModal = document.getElementById('permission-modal');
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Игнат загружен!');
-            
-            // Проверяем поддержку медиаустройств
-            if (!checkMediaSupport()) {
-                console.warn('Медиаустройства не поддерживаются в этом браузере');
-                // Скрываем кнопки голосовых сообщений и звонков
-                document.getElementById('voice-record-btn').style.display = 'none';
-                document.getElementById('audio-call-btn').style.display = 'none';
-                document.getElementById('video-call-btn').style.display = 'none';
-            }
-            
-            // Восстанавливаем тему
-            const savedTheme = getTheme();
-            setTheme(savedTheme);
-            document.getElementById('theme-toggle').checked = savedTheme === 'light';
-            document.getElementById('theme-setting').checked = savedTheme === 'light';
-            
-            // Восстанавливаем обои
-            const savedWallpaper = getWallpaper();
-            setWallpaper(savedWallpaper);
-            
-            // Восстанавливаем сессию
-            currentUser = db.restoreSession();
-            if (currentUser) {
-                messengerContainer.style.display = 'block';
-                landingPage.style.display = 'none';
-                authContainer.style.display = 'none';
-                
-                document.getElementById('user-avatar').textContent = currentUser.avatar;
-                document.getElementById('user-name').textContent = currentUser.username;
-                
-                if (currentUser.customAvatar) {
-                    document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.customAvatar})`;
-                    document.getElementById('user-avatar').textContent = '';
-                }
-                
-                loadUserChats();
-                startOnlineUpdates();
-                showNotification(`С возвращением, ${currentUser.username}!`, 'success');
-            } else {
-                landingPage.style.display = 'block';
-                authContainer.style.display = 'none';
-                messengerContainer.style.display = 'none';
-            }
-
-            // Обработчики для модального окна разрешений
-            document.getElementById('retry-permission-btn').addEventListener('click', function() {
-                hidePermissionModal();
-                // Пользователь может обновить страницу или повторить попытку
-                showNotification('Обновите страницу после предоставления разрешений', 'info');
-            });
-
-            document.getElementById('close-permission-btn').addEventListener('click', function() {
-                hidePermissionModal();
-            });
-
-            // Остальные обработчики событий...
-            // ... (все остальные обработчики из предыдущего кода)
-
-            // Голосовые сообщения - исправленная версия
-            document.getElementById('voice-record-btn').addEventListener('mousedown', startVoiceRecording);
-            document.getElementById('voice-record-btn').addEventListener('touchstart', startVoiceRecording);
-            document.getElementById('voice-record-btn').addEventListener('mouseup', stopVoiceRecording);
-            document.getElementById('voice-record-btn').addEventListener('touchend', stopVoiceRecording);
-            document.addEventListener('mouseup', cancelVoiceRecording);
-            document.addEventListener('touchend', cancelVoiceRecording);
-
-            // Звонки - исправленная версия
-            document.getElementById('audio-call-btn').addEventListener('click', function() {
-                if (!currentChat) {
-                    showNotification('Выберите чат для звонка', 'error');
-                    return;
-                }
-                startCall(false);
-            });
-
-            document.getElementById('video-call-btn').addEventListener('click', function() {
-                if (!currentChat) {
-                    showNotification('Выберите чат для звонка', 'error');
-                    return;
-                }
-                startCall(true);
-            });
-
-            // Остальные обработчики...
+            initAnimatedNav();
+            initMobileMenu();
+            initFAQ();
+            initScrollAnimations();
+            initClickParticles();
         });
 
-        // Функции для голосовых сообщений - ИСПРАВЛЕННАЯ ВЕРСИЯ
-        async function startVoiceRecording(e) {
-            e.preventDefault();
+        // Параллакс эффект
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const heroBg = document.querySelector('.hero-bg');
             
-            if (!currentChat) {
-                showNotification('Выберите чат для отправки голосового сообщения', 'error');
-                return;
+            if (heroBg) {
+                heroBg.style.transform = `translateY(${scrolled * 0.4}px)`;
             }
-            
-            try {
-                // Проверяем поддержку
-                if (!checkMediaSupport()) {
-                    showNotification('Ваш браузер не поддерживает запись голоса', 'error');
-                    return;
-                }
-
-                // Запрашиваем доступ к микрофону с обработкой ошибок
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    } 
-                }).catch(error => {
-                    console.error('Ошибка доступа к микрофону:', error);
-                    
-                    // Показываем понятное сообщение об ошибке
-                    let errorMessage = 'Не удалось получить доступ к микрофону';
-                    
-                    if (error.name === 'NotAllowedError') {
-                        errorMessage = 'Доступ к микрофону запрещен. Разрешите доступ в настройках браузера.';
-                        showPermissionModal();
-                    } else if (error.name === 'NotFoundError') {
-                        errorMessage = 'Микрофон не найден. Проверьте подключение микрофона.';
-                    } else if (error.name === 'NotSupportedError') {
-                        errorMessage = 'Ваш браузер не поддерживает запись голоса.';
-                    } else if (error.name === 'NotReadableError') {
-                        errorMessage = 'Микрофон используется другим приложением.';
-                    }
-                    
-                    throw new Error(errorMessage);
-                });
-
-                // Проверяем, что поток содержит аудио дорожки
-                if (stream.getAudioTracks().length === 0) {
-                    throw new Error('Микрофон не доступен');
-                }
-
-                // Создаем MediaRecorder с поддержкой MIME типов
-                const options = { 
-                    audioBitsPerSecond: 128000,
-                    mimeType: 'audio/webm;codecs=opus' 
-                };
-                
-                // Проверяем поддержку MIME типа
-                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                    delete options.mimeType; // Используем тип по умолчанию
-                }
-
-                mediaRecorder = new MediaRecorder(stream, options);
-                audioChunks = [];
-                
-                // Обработчик начала записи
-                mediaRecorder.start();
-                isRecording = true;
-                recordingStartTime = Date.now();
-                
-                // Обновляем интерфейс
-                document.getElementById('voice-record-btn').classList.add('recording');
-                showRecordingIndicator();
-                
-                // Обработчик данных записи
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        audioChunks.push(event.data);
-                    }
-                };
-                
-                // Обработчик ошибок MediaRecorder
-                mediaRecorder.onerror = (event) => {
-                    console.error('Ошибка MediaRecorder:', event.error);
-                    stopVoiceRecording();
-                    showNotification('Ошибка записи голоса', 'error');
-                };
-                
-                // Таймер для отображения времени записи
-                recordingTimer = setInterval(updateRecordingTime, 1000);
-                
-            } catch (error) {
-                console.error('Ошибка записи голоса:', error);
-                showNotification(error.message, 'error');
-                
-                // Останавливаем запись, если она была начата
-                if (isRecording) {
-                    stopVoiceRecording();
-                }
-            }
-        }
-
-        function stopVoiceRecording() {
-            if (!isRecording || !mediaRecorder) return;
-            
-            try {
-                // Останавливаем запись
-                if (mediaRecorder.state !== 'inactive') {
-                    mediaRecorder.stop();
-                }
-                isRecording = false;
-                
-                // Останавливаем таймер
-                if (recordingTimer) {
-                    clearInterval(recordingTimer);
-                    recordingTimer = null;
-                }
-                
-                // Обновляем интерфейс
-                document.getElementById('voice-record-btn').classList.remove('recording');
-                hideRecordingIndicator();
-                
-            } catch (error) {
-                console.error('Ошибка при остановке записи:', error);
-            }
-        }
-
-        // Функции для звонков - ИСПРАВЛЕННАЯ ВЕРСИЯ
-        async function startCall(isVideo) {
-            if (!currentChat) return;
-            
-            try {
-                // Проверяем поддержку
-                if (!checkMediaSupport()) {
-                    showNotification('Ваш браузер не поддерживает видеозвонки', 'error');
-                    return;
-                }
-
-                // Настройки для медиаустройств
-                const constraints = {
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    },
-                    video: isVideo ? {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        frameRate: { ideal: 30 }
-                    } : false
-                };
-
-                // Запрашиваем доступ к медиаустройствам с обработкой ошибок
-                localStream = await navigator.mediaDevices.getUserMedia(constraints)
-                    .catch(error => {
-                        console.error('Ошибка доступа к медиаустройствам:', error);
-                        
-                        let errorMessage = 'Не удалось получить доступ к ';
-                        if (isVideo) {
-                            errorMessage += 'камере и микрофону';
-                        } else {
-                            errorMessage += 'микрофону';
-                        }
-                        
-                        if (error.name === 'NotAllowedError') {
-                            errorMessage += '. Разрешите доступ в настройках браузера.';
-                            showPermissionModal();
-                        } else if (error.name === 'NotFoundError') {
-                            errorMessage += '. Устройство не найдено.';
-                        } else if (error.name === 'NotSupportedError') {
-                            errorMessage += '. Ваш браузер не поддерживает эту функцию.';
-                        } else if (error.name === 'NotReadableError') {
-                            errorMessage += '. Устройство используется другим приложением.';
-                        }
-                        
-                        throw new Error(errorMessage);
-                    });
-
-                // Проверяем, что получены нужные дорожки
-                if (localStream.getAudioTracks().length === 0) {
-                    throw new Error('Микрофон не доступен');
-                }
-
-                if (isVideo && localStream.getVideoTracks().length === 0) {
-                    throw new Error('Камера не доступна');
-                }
-
-                // Настраиваем интерфейс звонка
-                isVideoCall = isVideo;
-                setupCallInterface(isVideo);
-                
-                // Показываем интерфейс звонка
-                callContainer.style.display = 'flex';
-                
-                // Отображаем локальный поток
-                if (isVideo) {
-                    document.getElementById('local-video').srcObject = localStream;
-                }
-                
-                // Запускаем таймер звонка
-                startCallTimer();
-                
-                showNotification(`Звонок ${isVideo ? 'видео' : 'аудио'} начат`, 'info');
-                
-            } catch (error) {
-                console.error('Ошибка начала звонка:', error);
-                showNotification(error.message, 'error');
-                
-                // Освобождаем ресурсы в случае ошибки
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                }
-            }
-        }
-
-        // Остальные функции остаются без изменений
-        // ... (все остальные функции из предыдущего кода)
-
-        // Вспомогательные функции
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info'}"></i>
-                ${message}
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideIn 0.3s ease-out reverse';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        function showRecordingIndicator() {
-            const container = document.getElementById('chat-messages');
-            
-            const recordingElement = document.createElement('div');
-            recordingElement.className = 'voice-recording-indicator';
-            recordingElement.id = 'recording-indicator';
-            recordingElement.innerHTML = `
-                <div class="recording-dot"></div>
-                <div class="recording-time" id="recording-time">00:00</div>
-                <div class="recording-cancel-hint">Отпустите для отправки, смахните для отмены</div>
-            `;
-            
-            container.appendChild(recordingElement);
-            scrollToBottom();
-        }
-
-        function hideRecordingIndicator() {
-            const recordingElement = document.getElementById('recording-indicator');
-            if (recordingElement) {
-                recordingElement.remove();
-            }
-        }
-
-        function updateRecordingTime() {
-            const recordingTimeElement = document.getElementById('recording-time');
-            if (recordingTimeElement) {
-                const elapsedSeconds = Math.floor((Date.now() - recordingStartTime) / 1000);
-                recordingTimeElement.textContent = formatTime(elapsedSeconds);
-            }
-        }
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function setupCallInterface(isVideo) {
-            if (isVideo) {
-                document.getElementById('video-call-container').style.display = 'flex';
-                document.getElementById('audio-call-container').style.display = 'none';
-                document.getElementById('incoming-call-container').style.display = 'none';
-            } else {
-                document.getElementById('video-call-container').style.display = 'none';
-                document.getElementById('audio-call-container').style.display = 'flex';
-                document.getElementById('incoming-call-container').style.display = 'none';
-                
-                // Устанавливаем информацию о пользователе
-                const chat = db.getChat(currentChat);
-                if (chat && !chat.isGroup) {
-                    const otherUserId = chat.participants.find(id => id !== currentUser.id);
-                    const otherUser = db.getUserById(otherUserId);
-                    
-                    if (otherUser) {
-                        document.getElementById('call-user-avatar').textContent = otherUser.avatar;
-                        document.getElementById('call-user-name').textContent = otherUser.username;
-                    }
-                }
-            }
-        }
-
-        function startCallTimer() {
-            callStartTime = Date.now();
-            callTimer = setInterval(() => {
-                const elapsedSeconds = Math.floor((Date.now() - callStartTime) / 1000);
-                const timerElements = document.querySelectorAll('.call-timer');
-                timerElements.forEach(el => {
-                    el.textContent = formatTime(elapsedSeconds);
-                });
-            }, 1000);
-        }
-
-        function cancelVoiceRecording(e) {
-            if (isRecording) {
-                const voiceBtn = document.getElementById('voice-record-btn');
-                const rect = voiceBtn.getBoundingClientRect();
-                const isInside = (
-                    e.clientX >= rect.left &&
-                    e.clientX <= rect.right &&
-                    e.clientY >= rect.top &&
-                    e.clientY <= rect.bottom
-                );
-                
-                if (!isInside) {
-                    stopVoiceRecording();
-                    showNotification('Запись отменена', 'info');
-                }
-            }
-        }
-
-        // Остальные функции...
+        });
     </script>
 </body>
 </html>
