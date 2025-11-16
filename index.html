@@ -1,18 +1,76 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- Supabase SDK + DB wrapper inserted by assistant -->
+    
+    <!-- Supabase loader + DB wrapper injected -->
+    <script>
+    (function(){
+        const SUPABASE_URL = 'https://fonntroenitffyfvclqt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbm50cm9lbml0ZmZ5ZnZjbHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzMDEwMjIsImV4cCI6MjA3ODg3NzAyMn0.8cUhWygGe_do4US4GISBcBWywA7PyKuVCSixzTFVyfU';
+
+        function createDB() {
+            window.supabase = supabase;
+            const sup = window.supabase;
+            class SupabaseDB {
+                constructor(){ this.supabase = sup; }
+                async getUsers(){ const {data,error}=await this.supabase.from('profiles').select('*').order('username'); if(error){console.error(error);return[];} return data||[]; }
+                async getUserById(id){ const {data,error}=await this.supabase.from('profiles').select('*').eq('id',id).maybeSingle(); if(error){console.error(error);return null;} return data||null;}
+                async getUserChats(userId){ const {data,error}=await this.supabase.from('chats').select('*').contains('participants',[userId]).order('last_message_time',{ascending:false}); if(error){console.error(error);return[];} return data||[]; }
+                async updateChat(chatId,patch){ const {error}=await this.supabase.from('chats').update(patch).eq('id',chatId); if(error)console.error('updateChat',error); }
+                async addMessage(message){
+                    const row={ id: message.id, chat_id: message.chatId, sender_id: message.senderId, sender_name: message.senderName, text: message.text||'', timestamp: message.timestamp||new Date().toISOString(), reply_to: message.replyTo||null, pinned: message.pinned||false, metadata: message.metadata||{} };
+                    if(message.file && message.file.url){ row.file_url=message.file.url; row.file_name=message.file.name||''; row.file_type=message.file.type||''; row.file_size=message.file.size||0; }
+                    const {error}=await this.supabase.from('messages').insert(row);
+                    if(error) console.error('addMessage insert', error);
+                    return message.id;
+                }
+                async getChatMessages(chatId){ const {data,error}=await this.supabase.from('messages').select('*').eq('chat_id',chatId).order('timestamp',{ascending:true}); if(error){console.error('getChatMessages',error);return[];} return data||[]; }
+                async uploadFile(chatId,file){
+                    try{
+                        const path = `${chatId}/${file.name}_${Date.now()}`;
+                        const { error: upErr } = await this.supabase.storage.from('attachments').upload(path, file);
+                        if(upErr){console.error('storage upload', upErr); return null;}
+                        const { data } = this.supabase.storage.from('attachments').getPublicUrl(path);
+                        return data.publicUrl;
+                    }catch(e){console.error('uploadFile',e); return null;}
+                }
+            }
+            window.db = new SupabaseDB();
+        }
+
+        // if supabase already present (CDN loaded), init; else load CDN then init
+        if(window.supabase && window.supabase.createClient){
+            window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            createDB();
+        } else {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js';
+            s.onload = function(){
+                try{
+                    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    createDB();
+                }catch(e){ console.error('Supabase init error', e); }
+            };
+            s.onerror = function(e){ console.error('Failed to load supabase script', e); };
+            document.head.appendChild(s);
+        }
+    })();
+    </script>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игнат - Безопасный и быстрый мессенджер</title>
+    <title>Quantum - Безопасный и быстрый мессенджер</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Все существующие стили остаются без изменений */
+        /* Обновленная цветовая схема */
         :root {
-            --primary-blue: #0066FF;
-            --secondary-blue: #00D4FF;
-            --dark-blue: #0A0F2D;
-            --card-blue: #1A1F3E;
-            --input-blue: #252A4A;
+            --primary-blue: #443F75;
+            --secondary-blue: #6B63B5;
+            --dark-blue: #000000;
+            --card-blue: #2A2748;
+            --input-blue: #1E1B36;
             --text-white: #FFFFFF;
             --text-gray: #A0A8D0;
             --accent-purple: #8A2BE2;
@@ -22,13 +80,14 @@
             --offline-gray: #A0A8D0;
             --success-green: #00CC66;
             --warning-orange: #FFAA00;
-            --shadow-blue: rgba(0, 102, 255, 0.3);
+            --shadow-blue: rgba(68, 63, 117, 0.3);
+            --soft-purple: #A78BFA;
         }
 
         /* Светлая тема */
         [data-theme="light"] {
-            --primary-blue: #0066FF;
-            --secondary-blue: #00A3CC;
+            --primary-blue: #443F75;
+            --secondary-blue: #6B63B5;
             --dark-blue: #F5F7FF;
             --card-blue: #FFFFFF;
             --input-blue: #F8F9FF;
@@ -41,7 +100,8 @@
             --offline-gray: #718096;
             --success-green: #38A169;
             --warning-orange: #DD6B20;
-            --shadow-blue: rgba(0, 102, 255, 0.15);
+            --shadow-blue: rgba(68, 63, 117, 0.15);
+            --soft-purple: #A78BFA;
         }
 
         * {
@@ -68,6 +128,83 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+        }
+
+        /* Экран загрузки */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000000 0%, #2A2748 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-logo {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #443F75, #6B63B5, #8A2BE2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #6B63B5;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: var(--text-white);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .loading-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .loading-dots span {
+            animation: loadingDots 1.5s infinite;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loadingDots {
+            0%, 20% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
         }
 
         /* Кастомные скроллбары */
@@ -149,43 +286,84 @@
             30% { transform: scale(1.2); opacity: 1; }
         }
 
-        /* Новые анимации для голосовых сообщений и звонков */
-        @keyframes recordingPulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
+        /* Новые анимации для фона */
+        @keyframes backgroundShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        @keyframes wave {
-            0% { transform: scaleY(0.3); }
-            50% { transform: scaleY(1); }
-            100% { transform: scaleY(0.3); }
+        @keyframes particleFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.7; }
+            25% { transform: translate(10px, -15px) rotate(5deg); opacity: 1; }
+            50% { transform: translate(-5px, -25px) rotate(-5deg); opacity: 0.8; }
+            75% { transform: translate(-15px, -10px) rotate(3deg); opacity: 0.9; }
         }
 
-        @keyframes callRipple {
-            0% { transform: scale(0.8); opacity: 1; }
-            100% { transform: scale(2.5); opacity: 0; }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* Анимация волны для фона */
+        @keyframes waveAnimation {
+            0% { transform: translateX(0) translateY(0) scale(1); opacity: 0.7; }
+            50% { transform: translateX(-25%) translateY(-10%) scale(1.05); opacity: 0.9; }
+            100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.7; }
         }
 
-        @keyframes slideInFromLeft {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        /* Анимация пульсации кнопки отправки */
+        @keyframes sendButtonPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.4);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(167, 139, 250, 0);
+            }
         }
 
-        @keyframes slideInFromRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        @keyframes sendButtonGlow {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.25);
+            }
+            70% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 15px rgba(167, 139, 250, 0);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(167, 139, 250, 0);
+            }
         }
 
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
+        /* Анимация расширения поля ввода */
+        @keyframes inputExpand {
+            from { 
+                height: 48px;
+                border-radius: 24px;
+                backdrop-filter: blur(5px);
+            }
+            to { 
+                height: 120px;
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+            }
+        }
+
+        @keyframes inputCollapse {
+            from { 
+                height: 120px;
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+            }
+            to { 
+                height: 48px;
+                border-radius: 24px;
+                backdrop-filter: blur(5px);
+            }
         }
 
         /* Переключатель темы */
@@ -255,30 +433,69 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            background: linear-gradient(-45deg, #000000, #2A2748, #443F75, #6B63B5);
+            background-size: 400% 400%;
+            animation: backgroundShift 15s ease infinite;
         }
 
-        .floating-element {
+        .particles-container {
             position: absolute;
-            background: linear-gradient(45deg, var(--primary-blue), var(--accent-purple));
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(107, 99, 181, 0.2);
             border-radius: 50%;
-            opacity: 0.1;
-            animation: float 15s ease-in-out infinite;
+            animation: particleFloat 20s infinite linear;
         }
 
-        .floating-element:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            top: -150px;
-            left: -150px;
-            animation-delay: 0s;
+        .particle:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-duration: 25s;
         }
 
-        .floating-element:nth-child(2) {
-            width: 200px;
-            height: 200px;
-            bottom: 100px;
-            right: -100px;
+        .particle:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            left: 80%;
+            animation-duration: 30s;
             animation-delay: 2s;
+        }
+
+        .particle:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-duration: 20s;
+            animation-delay: 4s;
+        }
+
+        .particle:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            left: 70%;
+            animation-duration: 35s;
+            animation-delay: 1s;
+        }
+
+        .particle:nth-child(5) {
+            width: 70px;
+            height: 70px;
+            top: 50%;
+            left: 40%;
+            animation-duration: 28s;
+            animation-delay: 3s;
         }
 
         .header-content {
@@ -293,11 +510,11 @@
         .logo {
             font-size: 2.5rem;
             font-weight: 800;
-            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue), var(--accent-purple));
+            background: linear-gradient(45deg, #6B63B5, #8A2BE2);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 30px rgba(0, 102, 255, 0.5);
+            text-shadow: 0 0 30px rgba(107, 99, 181, 0.5);
             animation: glow 3s ease-in-out infinite;
         }
 
@@ -369,11 +586,11 @@
         }
 
         .btn-3d-primary {
-            background: linear-gradient(145deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(145deg, var(--primary-blue), #3A3665);
             color: white;
             box-shadow: 
                 0 10px 20px var(--shadow-blue),
-                0 6px 6px rgba(0, 102, 255, 0.2),
+                0 6px 6px rgba(68, 63, 117, 0.2),
                 inset 0 -2px 5px rgba(0, 0, 0, 0.2);
             transform: translateY(0);
         }
@@ -382,14 +599,14 @@
             transform: translateY(-5px) rotateX(10deg);
             box-shadow: 
                 0 15px 30px var(--shadow-blue),
-                0 10px 10px rgba(0, 102, 255, 0.3),
+                0 10px 10px rgba(68, 63, 117, 0.3),
                 inset 0 -2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .btn-3d-secondary {
             background: linear-gradient(145deg, var(--card-blue), var(--input-blue));
             color: var(--text-white);
-            border: 2px solid rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(107, 99, 181, 0.3);
             box-shadow: 
                 0 8px 16px rgba(0, 0, 0, 0.1),
                 0 4px 6px rgba(0, 0, 0, 0.05),
@@ -456,7 +673,7 @@
             background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
             padding: 35px 30px;
             border-radius: 20px;
-            border: 1px solid rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(107, 99, 181, 0.2);
             transition: all 0.4s ease;
             backdrop-filter: blur(10px);
             position: relative;
@@ -545,7 +762,7 @@
             border-radius: 25px;
             width: 100%;
             max-width: 480px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(15px);
             animation: slideIn 0.6s ease-out;
@@ -580,7 +797,7 @@
             width: 100%;
             padding: 18px 20px;
             background: var(--input-blue);
-            border: 2px solid rgba(0, 212, 255, 0.4);
+            border: 2px solid rgba(107, 99, 181, 0.4);
             border-radius: 12px;
             font-size: 16px;
             color: var(--text-white);
@@ -687,7 +904,7 @@
         }
 
         .auth-btn {
-            background: linear-gradient(145deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(145deg, var(--primary-blue), #3A3665);
             color: white;
             border: none;
             padding: 18px 24px;
@@ -784,26 +1001,27 @@
             overflow: hidden;
             display: flex;
             box-shadow: 0 25px 50px var(--shadow-blue);
-            border: 1px solid rgba(0, 212, 255, 0.25);
+            border: 1px solid rgba(107, 99, 181, 0.25);
             margin: 5vh auto;
             animation: slideIn 0.6s ease-out;
             backdrop-filter: blur(10px);
         }
 
-        /* Боковая панель чатов */
+        /* Боковая панель чатов - ОБНОВЛЕННЫЙ СТИЛЬ */
         .sidebar {
             width: 380px;
-            background: linear-gradient(180deg, var(--card-blue), var(--input-blue));
-            border-right: 1px solid rgba(0, 212, 255, 0.2);
+            background: linear-gradient(180deg, rgba(42, 39, 72, 0.8), rgba(30, 27, 54, 0.9));
+            border-right: 1px solid rgba(107, 99, 181, 0.2);
             display: flex;
             flex-direction: column;
             position: relative;
+            backdrop-filter: blur(15px);
         }
 
         .sidebar-header {
             padding: 25px;
-            background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            background: linear-gradient(135deg, rgba(68, 63, 117, 0.3), rgba(107, 99, 181, 0.2));
+            border-bottom: 1px solid rgba(107, 99, 181, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -931,15 +1149,15 @@
 
         .search-container {
             padding: 20px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+            border-bottom: 1px solid rgba(107, 99, 181, 0.15);
         }
 
         .search-input {
             width: 100%;
             padding: 16px 20px;
-            background: var(--input-blue);
-            border: 2px solid rgba(0, 212, 255, 0.3);
-            border-radius: 15px;
+            background: rgba(30, 27, 54, 0.7);
+            border: 2px solid rgba(107, 99, 181, 0.3);
+            border-radius: 25px;
             font-size: 15px;
             color: var(--text-white);
             transition: all 0.3s ease;
@@ -992,8 +1210,8 @@
             transition: all 0.4s ease;
             margin-bottom: 12px;
             gap: 15px;
-            background: linear-gradient(135deg, var(--input-blue), var(--card-blue));
-            border: 1px solid rgba(0, 212, 255, 0.1);
+            background: linear-gradient(135deg, rgba(30, 27, 54, 0.7), rgba(42, 39, 72, 0.5));
+            border: 1px solid rgba(107, 99, 181, 0.1);
             backdrop-filter: blur(10px);
             animation: slideIn 0.3s ease-out;
             position: relative;
@@ -1021,7 +1239,7 @@
         }
 
         .chat-item.active {
-            background: linear-gradient(135deg, rgba(0, 102, 255, 0.2), rgba(0, 212, 255, 0.1));
+            background: linear-gradient(135deg, rgba(68, 63, 117, 0.3), rgba(107, 99, 181, 0.2));
             border-color: var(--primary-blue);
         }
 
@@ -1079,7 +1297,7 @@
         .chat-header {
             padding: 25px 30px;
             background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            border-bottom: 1px solid rgba(107, 99, 181, 0.2);
             display: flex;
             align-items: center;
             gap: 18px;
@@ -1133,7 +1351,7 @@
         }
 
         .message.sent {
-            background: linear-gradient(135deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(135deg, var(--primary-blue), #3A3665);
             color: white;
             margin-left: auto;
             border-bottom-right-radius: 8px;
@@ -1144,7 +1362,7 @@
             color: var(--text-white);
             margin-right: auto;
             border-bottom-left-radius: 8px;
-            border: 1px solid rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(107, 99, 181, 0.2);
         }
 
         .message.pinned {
@@ -1218,6 +1436,57 @@
             margin-bottom: 8px;
             font-size: 0.85rem;
             color: var(--warning-orange);
+        }
+
+        /* Блок закрепленного сообщения */
+        .pinned-message-container {
+            background: linear-gradient(135deg, rgba(68, 63, 117, 0.2), rgba(107, 99, 181, 0.1));
+            border-radius: 12px;
+            padding: 15px;
+            margin: 0 30px 15px;
+            border-left: 4px solid var(--warning-orange);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .pinned-message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .pinned-message-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .pinned-message-content {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .pinned-message-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pinned-message-action {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pinned-message-action:hover {
+            color: var(--secondary-blue);
         }
 
         .file-message {
@@ -1332,14 +1601,24 @@
             line-height: 1.6;
         }
 
+        /* Контейнер ввода сообщения - ОБНОВЛЕННЫЙ СТИЛЬ */
         .chat-input-container {
             padding: 25px 30px;
-            background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
-            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            background: linear-gradient(135deg, rgba(42, 39, 72, 0.8), rgba(30, 27, 54, 0.9));
+            border-top: 1px solid rgba(107, 99, 181, 0.2);
             display: flex;
             align-items: flex-end;
             gap: 15px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            position: relative;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
         }
 
         .file-upload-container {
@@ -1353,31 +1632,57 @@
             opacity: 0;
         }
 
-        .message-input {
+        .message-input-wrapper {
             flex: 1;
-            padding: 16px 20px;
-            background: var(--input-blue);
-            border: 2px solid rgba(0, 212, 255, 0.3);
-            border-radius: 25px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(30, 27, 54, 0.7);
+            border: 2px solid rgba(107, 99, 181, 0.3);
+            border-radius: 24px;
             font-size: 16px;
             color: var(--text-white);
             resize: none;
             max-height: 120px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(5px);
             line-height: 1.5;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .message-input:focus {
             outline: none;
             border-color: var(--primary-blue);
-            transform: translateY(-2px);
             box-shadow: 0 10px 30px var(--shadow-blue);
         }
 
+        .message-input.expanded {
+            animation: inputExpand 0.3s ease-out forwards;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .message-input.collapsed {
+            animation: inputCollapse 0.3s ease-in-out forwards;
+        }
+
+        .input-cursor { display: none !important; }
+
+        .message-input:focus + .input-cursor { display: none !important; }
+
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
         .action-btn {
-            background: linear-gradient(135deg, var(--input-blue), var(--card-blue));
-            border: 2px solid rgba(0, 212, 255, 0.2);
+            background: linear-gradient(135deg, rgba(30, 27, 54, 0.7), rgba(42, 39, 72, 0.5));
+            border: 2px solid rgba(107, 99, 181, 0.2);
             color: var(--text-gray);
             cursor: pointer;
             width: 48px;
@@ -1390,18 +1695,26 @@
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             flex-shrink: 0;
+            opacity: 0.7;
+            transform: scale(0.9);
+        }
+
+        .action-btn.visible {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .action-btn:hover {
-            background: linear-gradient(135deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(135deg, var(--primary-blue), #3A3665);
             border-color: var(--primary-blue);
             color: white;
             transform: scale(1.1);
             box-shadow: 0 5px 15px var(--shadow-blue);
         }
 
+        /* Кнопка отправки с пульсацией */
         .send-btn {
-            background: linear-gradient(135deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(135deg, var(--primary-blue), #3A3665);
             color: white;
             border: none;
             width: 48px;
@@ -1415,6 +1728,8 @@
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px var(--shadow-blue);
             flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
         }
 
         .send-btn:hover:not(:disabled) {
@@ -1427,6 +1742,24 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+
+        .send-btn.active {
+            animation: sendButtonPulse 2s infinite;
+        }
+
+        .send-btn.pulsing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid rgba(167, 139, 250, 0.25);
+            animation: sendButtonGlow 1s infinite;
+            z-index: -1;
         }
 
         /* Модальные окна */
@@ -1450,7 +1783,7 @@
             padding: 30px;
             width: 90%;
             max-width: 500px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             animation: slideIn 0.3s ease-out;
             backdrop-filter: blur(10px);
@@ -1507,7 +1840,7 @@
             width: 100%;
             padding: 12px 16px;
             background: var(--input-blue);
-            border: 2px solid rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(107, 99, 181, 0.3);
             border-radius: 10px;
             font-size: 16px;
             color: var(--text-white);
@@ -1644,7 +1977,7 @@
         }
 
         .notification.info {
-            background: linear-gradient(135deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(135deg, var(--primary-blue), #3A3665);
             border-left: 4px solid var(--primary-blue);
         }
 
@@ -1752,7 +2085,7 @@
             max-width: 600px;
             max-height: 80vh;
             overflow-y: auto;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             animation: slideIn 0.3s ease-out;
             backdrop-filter: blur(10px);
@@ -1761,7 +2094,7 @@
         .settings-tabs {
             display: flex;
             margin-bottom: 25px;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            border-bottom: 1px solid rgba(107, 99, 181, 0.2);
         }
 
         .settings-tab {
@@ -1825,7 +2158,7 @@
 
         .status-option.selected {
             border-color: var(--primary-blue);
-            background: rgba(0, 102, 255, 0.1);
+            background: rgba(68, 63, 117, 0.1);
         }
 
         .status-indicator {
@@ -1911,11 +2244,11 @@
             text-align: center;
             margin: 20px 0;
             transition: all 0.3s;
-            background: rgba(0, 102, 255, 0.05);
+            background: rgba(68, 63, 117, 0.05);
         }
 
         .drop-zone.active {
-            background: rgba(0, 102, 255, 0.1);
+            background: rgba(68, 63, 117, 0.1);
             border-color: var(--secondary-blue);
         }
 
@@ -1973,7 +2306,7 @@
         .context-menu {
             position: fixed;
             background: var(--card-blue);
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             border-radius: 10px;
             padding: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -1997,6 +2330,71 @@
 
         .context-menu-item:hover {
             background: var(--input-blue);
+        }
+
+        /* Контекстное меню для сообщений - ИСПРАВЛЕННАЯ ВЕРСИЯ */
+        .message-context-menu {
+            position: fixed;
+            background: var(--card-blue);
+            border: 1px solid rgba(107, 99, 181, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            min-width: 220px;
+            animation: slideIn 0.2s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .message-context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            background: none;
+            border: none;
+            color: var(--text-white);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .message-context-menu-item:hover {
+            background: var(--input-blue);
+            transform: translateX(5px);
+        }
+
+        .message-context-menu-item i {
+            width: 16px;
+            text-align: center;
+        }
+
+        .message-context-menu-divider {
+            height: 1px;
+            background: rgba(107, 99, 181, 0.2);
+            margin: 6px 0;
+        }
+
+        /* Красный текст для опасных действий */
+        .message-context-menu-item.delete,
+        .message-context-menu-item.report {
+            color: var(--dnd-red) !important;
+        }
+
+        .message-context-menu-item.delete:hover,
+        .message-context-menu-item.report:hover {
+            background: rgba(255, 68, 68, 0.2) !important;
+            color: var(--dnd-red) !important;
+        }
+
+        .message-context-menu-item.delete i,
+        .message-context-menu-item.report i {
+            color: var(--dnd-red) !important;
         }
 
         /* Стили для голосовых сообщений */
@@ -2066,7 +2464,7 @@
         .voice-speed-selector {
             background: var(--input-blue);
             color: var(--text-white);
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             border-radius: 5px;
             padding: 3px 6px;
             font-size: 0.7rem;
@@ -2105,7 +2503,7 @@
         /* Кнопка записи голосового сообщения */
         .voice-record-btn {
             background: linear-gradient(135deg, var(--input-blue), var(--card-blue));
-            border: 2px solid rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(107, 99, 181, 0.2);
             color: var(--text-gray);
             cursor: pointer;
             width: 48px;
@@ -2122,7 +2520,7 @@
         }
 
         .voice-record-btn:hover {
-            background: linear-gradient(135deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(135deg, var(--primary-blue), #3A3665);
             border-color: var(--primary-blue);
             color: white;
             transform: scale(1.1);
@@ -2185,7 +2583,7 @@
             padding: 40px;
             background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
             border-radius: 20px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             max-width: 400px;
             width: 90%;
@@ -2267,11 +2665,11 @@
         .call-toggle {
             background: linear-gradient(135deg, var(--input-blue), var(--card-blue));
             color: var(--text-white);
-            border: 2px solid rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(107, 99, 181, 0.3);
         }
 
         .call-toggle.active {
-            background: linear-gradient(135deg, var(--primary-blue), #0055cc);
+            background: linear-gradient(135deg, var(--primary-blue), #3A3665);
             border-color: var(--primary-blue);
         }
 
@@ -2292,7 +2690,7 @@
             display: none;
             align-items: center;
             gap: 15px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(107, 99, 181, 0.3);
             backdrop-filter: blur(10px);
             animation: bounceIn 0.5s ease-out;
         }
@@ -2435,20 +2833,243 @@
                 font-size: 1.2rem;
             }
         }
-    </style>
+
+        /* Анимированный фон для мессенджера */
+        .wave-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(107, 99, 181, 0.3) 50%, 
+                transparent 100%);
+            animation: waveAnimation 15s linear infinite;
+            transform-origin: center bottom;
+        }
+
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.5;
+            height: 80%;
+        }
+
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.3;
+            height: 60%;
+        }
+
+        /* Модальное окно подтверждения удаления */
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .confirmation-content {
+            background: linear-gradient(135deg, var(--card-blue), var(--input-blue));
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid rgba(107, 99, 181, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s ease-out;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .confirmation-icon {
+            font-size: 3rem;
+            color: var(--dnd-red);
+            margin-bottom: 20px;
+        }
+
+        .confirmation-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-white);
+        }
+
+        .confirmation-text {
+            color: var(--text-gray);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .confirmation-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            flex: 1;
+        }
+
+        .confirmation-btn.cancel {
+            background: var(--input-blue);
+            color: var(--text-white);
+        }
+
+        .confirmation-btn.delete {
+            background: linear-gradient(135deg, var(--dnd-red), #cc3333);
+            color: white;
+        }
+
+        .confirmation-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+    
+/* --- Reactions UI CSS (inserted) --- */
+.message-reactions-btn {
+    position: absolute;
+    bottom: -12px;
+    right: 15px;
+    background: var(--card-blue);
+    padding: 6px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    cursor: pointer;
+    display: none;
+    transition: 0.3s;
+    z-index: 5;
+}
+
+.message:hover .message-reactions-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.message-reactions-btn i { font-size: 14px; }
+
+.reactions-menu {
+    position: fixed;
+    background: var(--card-blue);
+    border: 1px solid rgba(107, 99, 181, 0.3);
+    border-radius: 12px;
+    padding: 8px;
+    display: none;
+    gap: 10px;
+    font-size: 1.2rem;
+    z-index: 10000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    align-items: center;
+}
+
+.reactions-menu span {
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: 0.12s;
+    font-size: 18px;
+}
+
+.reactions-menu span:hover {
+    background: var(--input-blue);
+    transform: translateY(-2px);
+}
+
+.reaction-list {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.reaction-item {
+    background: rgba(255,255,255,0.06);
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.12s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-white);
+}
+
+.reaction-item:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+}
+/* --- end reactions CSS --- */
+
+
+/* --- PATCH: Fix reactions overflow --- */
+.reaction-list {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    overflow: hidden;
+    gap: 6px;
+}
+.reaction-item {
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* --- END PATCH --- */
+
+</style>
 </head>
 <body>
+    <!-- Экран загрузки -->
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-logo">Quantum</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Загрузка<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>
+
     <!-- Главная страница -->
     <div class="landing-page" id="landing-page">
         <div class="background-animation">
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
+            <div class="particles-container">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
         </div>
 
         <header class="header">
             <div class="container">
                 <div class="header-content">
-                    <div class="logo">ИГНАТ</div>
+                    <div class="logo">Quantum</div>
                     <nav class="nav-links">
                         <a href="#" class="nav-link">Главная</a>
                         <a href="#" class="nav-link">Возможности</a>
@@ -2473,7 +3094,7 @@
             <div class="container">
                 <div class="hero-content">
                     <h1 class="hero-title">Безопасный и быстрый мессенджер</h1>
-                    <p class="hero-subtitle">Игнат предлагает современное решение для общения с полной защитой ваших данных. Быстрая доставка сообщений, шифрование и удобный интерфейс.</p>
+                    <p class="hero-subtitle">Quantum предлагает современное решение для общения с полной защитой ваших данных. Быстрая доставка сообщений, шифрование и удобный интерфейс.</p>
                     <div class="hero-buttons">
                         <button class="btn-3d btn-3d-primary" id="hero-register-btn">Начать общение</button>
                         <button class="btn-3d btn-3d-secondary" id="learn-more-btn">Узнать больше</button>
@@ -2590,12 +3211,14 @@
 
     <!-- Основной интерфейс мессенджера -->
     <div class="messenger-container" id="messenger-container">
-        <div class="messenger-bg">
-            <div class="messenger-floating"></div>
-            <div class="messenger-floating"></div>
+        <div class="wave-background">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
         </div>
         
         <div class="app-container">
+            <!-- Боковая панель с чатами -->
             <div class="sidebar">
                 <div class="sidebar-header">
                     <div class="user-info">
@@ -2629,6 +3252,7 @@
                 </div>
             </div>
             
+            <!-- Основная область чата -->
             <div class="chat-content">
                 <div class="chat-header">
                     <div class="avatar" id="current-chat-avatar">?</div>
@@ -2646,9 +3270,32 @@
                     </div>
                 </div>
                 
+                <!-- Блок закрепленного сообщения -->
+                <div class="pinned-message-container" id="pinned-message-container">
+                    <div class="pinned-message-header">
+                        <div class="pinned-message-info">
+                            <i class="fas fa-thumbtack"></i>
+                            <span>Закрепленное сообщение</span>
+                        </div>
+                        <button class="pinned-message-action" id="unpin-message-btn">
+                            <i class="fas fa-times"></i>
+                            Открепить
+                        </button>
+                    </div>
+                    <div class="pinned-message-content" id="pinned-message-content">
+                        <!-- Содержимое закрепленного сообщения -->
+                    </div>
+                    <div class="pinned-message-actions">
+                        <button class="pinned-message-action" id="show-in-chat-btn">
+                            <i class="fas fa-arrow-down"></i>
+                            Показать в чате
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="chat-messages custom-scrollbar" id="chat-messages">
                     <div class="welcome-message">
-                        <div class="welcome-title">Добро пожаловать в Игнат!</div>
+                        <div class="welcome-title">Добро пожаловать в Quantum!</div>
                         <div class="welcome-subtitle">
                             <p>Выберите чат из списка слева или начните новую беседу</p>
                             <p>Все сообщения сохраняются в защищенной базе данных</p>
@@ -2656,23 +3303,28 @@
                     </div>
                 </div>
                 
+                <!-- Контейнер ввода сообщения с улучшенной анимацией -->
                 <div class="chat-input-container">
-                    <div class="file-upload-container">
-                        <input type="file" id="file-input" class="file-input" multiple>
-                        <button class="action-btn" id="file-btn" title="Прикрепить файл">
-                            <i class="fas fa-paperclip"></i>
+                    <div class="chat-input-wrapper">
+                        <div class="file-upload-container">
+                            <input type="file" id="file-input" class="file-input" multiple>
+                            <button class="action-btn" id="file-btn" title="Прикрепить файл">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                        </div>
+                        <button class="action-btn" id="voice-record-btn" title="Голосовое сообщение">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="action-btn" id="emoji-btn" title="Эмодзи">
+                            <i class="fas fa-smile"></i>
+                        </button>
+                        <div class="message-input-wrapper">
+                            <textarea class="message-input" id="message-input" placeholder="Введите сообщение..." rows="1" disabled></textarea>
+                        </div>
+                        <button class="send-btn" id="send-btn" title="Отправить" disabled>
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
-                    <button class="action-btn" id="voice-record-btn" title="Голосовое сообщение">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                    <button class="action-btn" id="emoji-btn" title="Эмодзи">
-                        <i class="fas fa-smile"></i>
-                    </button>
-                    <textarea class="message-input" id="message-input" placeholder="Введите сообщение..." rows="1" disabled></textarea>
-                    <button class="send-btn" id="send-btn" title="Отправить" disabled>
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -2859,6 +3511,21 @@
         </div>
     </div>
 
+    <!-- Модальное окно подтверждения удаления -->
+    <div class="confirmation-modal" id="delete-confirmation-modal">
+        <div class="confirmation-content">
+            <div class="confirmation-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="confirmation-title">Удалить сообщение?</h3>
+            <p class="confirmation-text">Вы уверены, что хотите удалить это сообщение? Это действие нельзя отменить.</p>
+            <div class="confirmation-actions">
+                <button class="confirmation-btn cancel" id="cancel-delete-btn">Отмена</button>
+                <button class="confirmation-btn delete" id="confirm-delete-btn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Контейнер для звонков -->
     <div class="call-container" id="call-container">
         <div class="call-video-container" id="video-call-container" style="display: none;">
@@ -2930,268 +3597,23 @@
     </div>
 
     <script>
+(async function app_main(){
+    // wait for supabase db to be ready
+    await new Promise((resolve, reject) => {
+        if (window.db) return resolve();
+        let waited = 0;
+        const iv = setInterval(() => {
+            if (window.db) { clearInterval(iv); return resolve(); }
+            waited += 50;
+            if (waited > 15000) { clearInterval(iv); return reject(new Error('Supabase DB init timeout')); }
+        }, 50);
+    }).catch(err => { console.error(err); });
+    const db = window.db;
+
+
         // Упрощенная база данных на localStorage
-        class IgnatDB {
-            constructor() {
-                this.storage = localStorage;
-                this.init();
-            }
 
-            init() {
-                this.restoreSession();
-            }
-
-            saveSession(user) {
-                this.storage.setItem('ignat_current_user', JSON.stringify(user));
-            }
-
-            getCurrentSession() {
-                const session = this.storage.getItem('ignat_current_user');
-                return session ? JSON.parse(session) : null;
-            }
-
-            clearSession() {
-                this.storage.removeItem('ignat_current_user');
-            }
-
-            restoreSession() {
-                const currentUser = this.getCurrentSession();
-                if (currentUser) {
-                    currentUser.lastSeen = new Date().toISOString();
-                    currentUser.isOnline = true;
-                    this.saveSession(currentUser);
-                    this.updateUser(currentUser.id, {
-                        lastSeen: currentUser.lastSeen,
-                        isOnline: true
-                    });
-                }
-                return currentUser;
-            }
-
-            async addUser(user) {
-                const users = this.getUsers();
-                users.push(user);
-                this.storage.setItem('ignat_users', JSON.stringify(users));
-                this.saveSession(user);
-                return user.id;
-            }
-
-            getUsers() {
-                return JSON.parse(this.storage.getItem('ignat_users') || '[]');
-            }
-
-            async getUserByUsername(username) {
-                const users = this.getUsers();
-                return users.find(user => user.username === username);
-            }
-
-            async getUserById(userId) {
-                const users = this.getUsers();
-                return users.find(user => user.id === userId);
-            }
-
-            async getAllUsers() {
-                return this.getUsers();
-            }
-
-            async searchUsers(query) {
-                const users = this.getUsers();
-                const searchTerm = query.toLowerCase();
-                return users.filter(user => 
-                    user.username.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            async updateUser(userId, updates) {
-                const users = this.getUsers();
-                const userIndex = users.findIndex(user => user.id === userId);
-                if (userIndex !== -1) {
-                    users[userIndex] = { ...users[userIndex], ...updates };
-                    this.storage.setItem('ignat_users', JSON.stringify(users));
-                    
-                    const currentUser = this.getCurrentSession();
-                    if (currentUser && currentUser.id === userId) {
-                        this.saveSession(users[userIndex]);
-                    }
-                    
-                    return users[userIndex];
-                }
-                return null;
-            }
-
-            async getSettings(userId) {
-                const settings = JSON.parse(this.storage.getItem('ignat_settings') || '{}');
-                return settings[userId] || {};
-            }
-
-            async saveSettings(userId, newSettings) {
-                const settings = JSON.parse(this.storage.getItem('ignat_settings') || '{}');
-                settings[userId] = { ...settings[userId], ...newSettings };
-                this.storage.setItem('ignat_settings', JSON.stringify(settings));
-            }
-
-            async addChat(chat) {
-                const chats = this.getChats();
-                chats.push(chat);
-                this.storage.setItem('ignat_chats', JSON.stringify(chats));
-                return chat.id;
-            }
-
-            getChats() {
-                return JSON.parse(this.storage.getItem('ignat_chats') || '[]');
-            }
-
-            async getChat(chatId) {
-                const chats = this.getChats();
-                return chats.find(chat => chat.id === chatId);
-            }
-
-            async getUserChats(userId) {
-                const chats = this.getChats();
-                return chats.filter(chat => 
-                    chat.participants.includes(userId)
-                ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-            }
-
-            async getAllChats() {
-                return this.getChats();
-            }
-
-            async findChatBetweenUsers(user1Id, user2Id) {
-                const chats = this.getChats();
-                return chats.find(chat =>
-                    chat.participants.includes(user1Id) &&
-                    chat.participants.includes(user2Id) &&
-                    chat.participants.length === 2
-                );
-            }
-
-            async updateChat(chatId, updates) {
-                const chats = this.getChats();
-                const chatIndex = chats.findIndex(chat => chat.id === chatId);
-                if (chatIndex !== -1) {
-                    chats[chatIndex] = { ...chats[chatIndex], ...updates };
-                    this.storage.setItem('ignat_chats', JSON.stringify(chats));
-                    return chats[chatIndex];
-                }
-                return null;
-            }
-
-            async addMessage(message) {
-                const messages = this.getMessages();
-                messages.push(message);
-                this.storage.setItem('ignat_messages', JSON.stringify(messages));
-                return message.id;
-            }
-
-            getMessages() {
-                return JSON.parse(this.storage.getItem('ignat_messages') || '[]');
-            }
-
-            async getChatMessages(chatId) {
-                const messages = this.getMessages();
-                return messages
-                    .filter(message => message.chatId === chatId)
-                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-            }
-
-            async getLastMessage(chatId) {
-                const messages = await this.getChatMessages(chatId);
-                return messages[messages.length - 1];
-            }
-
-            async updateMessage(messageId, updates) {
-                const messages = this.getMessages();
-                const messageIndex = messages.findIndex(msg => msg.id === messageId);
-                if (messageIndex !== -1) {
-                    messages[messageIndex] = { ...messages[messageIndex], ...updates };
-                    this.storage.setItem('ignat_messages', JSON.stringify(messages));
-                    return messages[messageIndex];
-                }
-                return null;
-            }
-
-            async addFile(file) {
-                const files = this.getFiles();
-                files.push(file);
-                this.storage.setItem('ignat_files', JSON.stringify(files));
-                return file.id;
-            }
-
-            getFiles() {
-                return JSON.parse(this.storage.getItem('ignat_files') || '[]');
-            }
-
-            async getFile(fileId) {
-                const files = this.getFiles();
-                return files.find(file => file.id === fileId);
-            }
-
-            // Методы для работы с голосовыми сообщениями
-            async addVoiceMessage(voiceMessage) {
-                const voiceMessages = this.getVoiceMessages();
-                voiceMessages.push(voiceMessage);
-                this.storage.setItem('ignat_voice_messages', JSON.stringify(voiceMessages));
-                return voiceMessage.id;
-            }
-
-            getVoiceMessages() {
-                return JSON.parse(this.storage.getItem('ignat_voice_messages') || '[]');
-            }
-
-            async getChatVoiceMessages(chatId) {
-                const voiceMessages = this.getVoiceMessages();
-                return voiceMessages.filter(msg => msg.chatId === chatId);
-            }
-
-            // Методы для работы с заблокированными пользователями
-            async blockUser(userId, targetUserId) {
-                const blocked = this.getBlockedUsers();
-                if (!blocked[userId]) {
-                    blocked[userId] = [];
-                }
-                
-                if (!blocked[userId].includes(targetUserId)) {
-                    blocked[userId].push(targetUserId);
-                    this.storage.setItem('ignat_blocked_users', JSON.stringify(blocked));
-                }
-            }
-
-            async unblockUser(userId, targetUserId) {
-                const blocked = this.getBlockedUsers();
-                if (blocked[userId]) {
-                    blocked[userId] = blocked[userId].filter(id => id !== targetUserId);
-                    this.storage.setItem('ignat_blocked_users', JSON.stringify(blocked));
-                }
-            }
-
-            getBlockedUsers() {
-                return JSON.parse(this.storage.getItem('ignat_blocked_users') || '{}');
-            }
-
-            isUserBlocked(userId, targetUserId) {
-                const blocked = this.getBlockedUsers();
-                return blocked[userId] && blocked[userId].includes(targetUserId);
-            }
-
-            getBlockedUsersList(userId) {
-                const blocked = this.getBlockedUsers();
-                return blocked[userId] || [];
-            }
-
-            clearDatabase() {
-                this.storage.removeItem('ignat_users');
-                this.storage.removeItem('ignat_chats');
-                this.storage.removeItem('ignat_messages');
-                this.storage.removeItem('ignat_files');
-                this.storage.removeItem('ignat_voice_messages');
-                this.storage.removeItem('ignat_settings');
-                this.storage.removeItem('ignat_blocked_users');
-                this.storage.removeItem('ignat_wallpaper');
-                this.clearSession();
-            }
-        }
-
+        
         // Валидация
         function validateUsername(username) {
             const regex = /^[a-zA-Z0-9]{3,20}$/;
@@ -3423,7 +3845,7 @@
         }
 
         // Инициализация
-        const db = new IgnatDB();
+        
         let currentUser = null;
         let currentChat = null;
         let updateInterval = null;
@@ -3450,17 +3872,461 @@
         let isAudioMuted = false;
         let isVideoMuted = false;
 
+        // Переменные для контекстного меню
+        let contextMenuMessage = null;
+
+        // Переменные для анимации поля ввода
+        let isInputExpanded = false;
+        let inputAnimationTimeout = null;
+
         // Элементы DOM
+        const loadingScreen = document.getElementById('loading-screen');
         const landingPage = document.getElementById('landing-page');
         const authContainer = document.getElementById('auth-container');
         const messengerContainer = document.getElementById('messenger-container');
         const settingsWindow = document.getElementById('settings-window');
         const callContainer = document.getElementById('call-container');
         const incomingCallNotification = document.getElementById('incoming-call-notification');
+        const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
+        const pinnedMessageContainer = document.getElementById('pinned-message-container');
+        const pinnedMessageContent = document.getElementById('pinned-message-content');
+
+        // Функции для работы с закрепленными сообщениями
+        async function displayPinnedMessage(chatId) {
+            const pinnedMsg = await db.getPinnedMessage(chatId);
+            if (pinnedMsg) {
+                pinnedMessage = pinnedMsg;
+                pinnedMessageContainer.style.display = 'block';
+                
+                // Форматируем содержимое закрепленного сообщения
+                let content = '';
+                if (pinnedMsg.file) {
+                    content = `
+                        <div class="file-message">
+                            <div class="file-icon">
+                                <i class="fas fa-${getFileIcon(pinnedMsg.file.type)}"></i>
+                            </div>
+                            <div class="file-info">
+                                <div class="file-name">${pinnedMsg.file.name}</div>
+                                <div class="file-size">${formatFileSize(pinnedMsg.file.size)}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content = `<div>${pinnedMsg.text}</div>`;
+                }
+                
+                pinnedMessageContent.innerHTML = content;
+            } else {
+                pinnedMessageContainer.style.display = 'none';
+                pinnedMessage = null;
+            }
+        }
+
+        async function pinMessage(messageId) {
+            if (!currentChat) return;
+            
+            const message = getMessageById(messageId);
+            if (!message) return;
+            
+            // Снимаем закрепление с предыдущего сообщения
+            await db.unpinMessage(currentChat);
+            
+            // Закрепляем новое сообщение
+            await db.pinMessage(currentChat, messageId);
+            pinnedMessage = message;
+            
+            // Обновляем интерфейс
+            await displayPinnedMessage(currentChat);
+            showNotification('Сообщение закреплено', 'success');
+        }
+
+        async function unpinMessage() {
+            if (!currentChat || !pinnedMessage) return;
+            
+            await db.unpinMessage(currentChat);
+            pinnedMessage = null;
+            
+            // Обновляем интерфейс
+            pinnedMessageContainer.style.display = 'none';
+            showNotification('Сообщение откреплено', 'info');
+        }
+
+        function showInChat() {
+            if (!pinnedMessage) return;
+            
+            // Прокручиваем к закрепленному сообщению
+            const messageElement = document.querySelector(`[data-message-id="${pinnedMessage.id}"]`);
+            if (messageElement) {
+                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Добавляем подсветку
+                messageElement.style.animation = 'pulse 2s';
+                setTimeout(() => {
+                    messageElement.style.animation = '';
+                }, 2000);
+            }
+        }
+
+        // Функции для анимации поля ввода
+        function expandInput() {
+            if (isInputExpanded) return;
+            
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const actionBtns = document.querySelectorAll('.action-btn');
+            
+            // Анимация расширения
+            messageInput.classList.remove('collapsed');
+            messageInput.classList.add('expanded');
+            
+            // Анимация кнопок
+            sendBtn.classList.add('pulsing');
+            
+            actionBtns.forEach(btn => {
+                if (btn.id !== 'file-btn') {
+                    btn.classList.add('visible');
+                }
+            });
+            
+            isInputExpanded = true;
+        }
+
+        function collapseInput() {
+            if (!isInputExpanded) return;
+            
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const actionBtns = document.querySelectorAll('.action-btn');
+            
+            // Анимация сжатия
+            messageInput.classList.remove('expanded');
+            messageInput.classList.add('collapsed');
+            
+            // Сброс анимации кнопок
+            sendBtn.classList.remove('pulsing');
+            
+            actionBtns.forEach(btn => {
+                if (btn.id !== 'file-btn') {
+                    btn.classList.remove('visible');
+                }
+            });
+            
+            isInputExpanded = false;
+        }
+
+        // Функции для подтверждения удаления
+        function showDeleteConfirmation(message) {
+            deleteConfirmationModal.style.display = 'flex';
+            
+            // Сохраняем сообщение для удаления
+            contextMenuMessage = message;
+        }
+
+        function hideDeleteConfirmation() {
+            deleteConfirmationModal.style.display = 'none';
+            contextMenuMessage = null;
+        }
+
+        async function confirmDelete() {
+            if (!contextMenuMessage) return;
+            
+            // Удаляем сообщение из базы данных
+            const messages = db.getMessages();
+            const updatedMessages = messages.filter(msg => msg.id !== contextMenuMessage.id);
+            localStorage.setItem('ignat_messages', JSON.stringify(updatedMessages));
+            
+            // Если удаляем закрепленное сообщение, открепляем его
+            if (pinnedMessage && pinnedMessage.id === contextMenuMessage.id) {
+                await unpinMessage();
+            }
+            
+            // Обновляем интерфейс
+            if (currentChat) {
+                loadChatMessages(currentChat);
+            }
+            
+            showNotification('Сообщение удалено', 'success');
+            hideDeleteConfirmation();
+        }
+
+        // ИСПРАВЛЕННАЯ ФУНКЦИЯ для показа контекстного меню сообщения
+        function showMessageContextMenu(e, message) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            contextMenuMessage = message;
+            
+            // Удаляем существующее меню
+            const existingMenu = document.querySelector('.message-context-menu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+            
+            // Создаем контекстное меню
+            const contextMenu = document.createElement('div');
+            contextMenu.className = 'message-context-menu';
+            
+            // Рассчитываем позицию, чтобы меню не выходило за границы экрана
+            let posX = e.pageX;
+            let posY = e.pageY;
+            
+            // Предварительно рассчитываем размеры меню
+            const menuWidth = 220;
+            const menuHeight = 400; // Примерная высота
+            
+            // Проверяем, чтобы меню не выходило за правый край
+            if (posX + menuWidth > window.innerWidth) {
+                posX = window.innerWidth - menuWidth - 10;
+            }
+            
+            // Проверяем, чтобы меню не выходило за нижний край
+            if (posY + menuHeight > window.innerHeight) {
+                posY = window.innerHeight - menuHeight - 10;
+            }
+            
+            contextMenu.style.left = posX + 'px';
+            contextMenu.style.top = posY + 'px';
+            
+            const isSent = message.senderId === currentUser.id;
+            
+            // Создаем пункты меню
+            const menuItems = [];
+            
+            // Добавить реакцию
+            menuItems.push(`
+                <button class="message-context-menu-item" data-action="add-reaction">
+                    <i class="fas fa-smile"></i>
+                    Добавить реакцию
+                </button>
+            `);
+            
+            // Ответить
+            menuItems.push(`
+                <button class="message-context-menu-item" data-action="reply">
+                    <i class="fas fa-reply"></i>
+                    Ответить
+                </button>
+            `);
+            
+            menuItems.push('<div class="message-context-menu-divider"></div>');
+            
+            // Редактировать (только для своих сообщений)
+            if (isSent) {
+                menuItems.push(`
+                    <button class="message-context-menu-item" data-action="edit">
+                        <i class="fas fa-edit"></i>
+                        Редактировать
+                    </button>
+                `);
+            }
+            
+            // Переслать
+            menuItems.push(`
+                <button class="message-context-menu-item" data-action="forward">
+                    <i class="fas fa-share"></i>
+                    Переслать
+                    </button>
+            `);
+            
+            // Скопировать текст
+            if (message.text) {
+                menuItems.push(`
+                    <button class="message-context-menu-item" data-action="copy-text">
+                        <i class="fas fa-copy"></i>
+                        Скопировать текст
+                    </button>
+                `);
+            }
+            
+            menuItems.push('<div class="message-context-menu-divider"></div>');
+            
+            // Закрепить сообщение (только если сообщение не уже закреплено)
+            if (!message.pinned) {
+                menuItems.push(`
+                    <button class="message-context-menu-item" data-action="pin">
+                        <i class="fas fa-thumbtack"></i>
+                        Закрепить сообщение
+                    </button>
+                `);
+            }
+            
+            // Отметить как непрочитанное
+            menuItems.push(`
+                <button class="message-context-menu-item" data-action="mark-unread">
+                    <i class="fas fa-envelope"></i>
+                    Отметить как непрочитанное
+                </button>
+            `);
+            
+            // Скопировать ссылку
+            menuItems.push(`
+                <button class="message-context-menu-item" data-action="copy-link">
+                    <i class="fas fa-link"></i>
+                    Скопировать ссылку
+                </button>
+            `);
+            
+            menuItems.push('<div class="message-context-menu-divider"></div>');
+            
+            // Пожаловаться (красный текст)
+            menuItems.push(`
+                <button class="message-context-menu-item report" data-action="report">
+                    <i class="fas fa-flag"></i>
+                    Пожаловаться
+                </button>
+            `);
+            
+            // Удалить (только для своих сообщений, красный текст)
+            if (isSent) {
+                menuItems.push(`
+                    <button class="message-context-menu-item delete" data-action="delete">
+                        <i class="fas fa-trash"></i>
+                        Удалить
+                    </button>
+                `);
+            }
+            
+            contextMenu.innerHTML = menuItems.join('');
+            
+            document.body.appendChild(contextMenu);
+            
+            // Обработчики для пунктов меню
+            contextMenu.querySelectorAll('.message-context-menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    handleMessageContextAction(action, message);
+                    contextMenu.remove();
+                });
+            });
+            
+            // Закрытие меню при клике вне его
+            function closeMenu() {
+                contextMenu.remove();
+                document.removeEventListener('click', closeMenu);
+                document.removeEventListener('contextmenu', closeMenu);
+            }
+            
+            // Даем время для обработки текущего события
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+                document.addEventListener('contextmenu', closeMenu);
+            }, 100);
+        }
+
+        // Обработчик действий контекстного меню
+        function handleMessageContextAction(action, message) {
+            switch(action) {
+                case 'add-reaction':
+                    showReactionPicker(message);
+                    break;
+                case 'reply':
+                    replyToMessage(message.id);
+                    break;
+                case 'edit':
+                    editMessage(message);
+                    break;
+                case 'forward':
+                    forwardMessage(message);
+                    break;
+                case 'copy-text':
+                    copyMessageText(message);
+                    break;
+                case 'pin':
+                    pinMessage(message.id);
+                    break;
+                case 'mark-unread':
+                    markMessageAsUnread(message);
+                    break;
+                case 'copy-link':
+                    copyMessageLink(message);
+                    break;
+                case 'report':
+                    reportMessage(message);
+                    break;
+                case 'delete':
+                    showDeleteConfirmation(message);
+                    break;
+            }
+        }
+
+        // Функции для обработки действий контекстного меню
+        function showReactionPicker(message) {
+            // В реальном приложении здесь будет логика выбора реакции
+            showNotification('Выберите реакцию для сообщения', 'info');
+        }
+
+        function editMessage(message) {
+            // В реальном приложении здесь будет логика редактирования сообщения
+            const newText = prompt('Редактировать сообщение:', message.text);
+            if (newText && newText !== message.text) {
+                db.updateMessage(message.id, { text: newText });
+                loadChatMessages(currentChat);
+                showNotification('Сообщение отредактировано', 'success');
+            }
+        }
+
+        function forwardMessage(message) {
+            // В реальном приложении здесь будет логика пересылки сообщения
+            showNotification('Выберите чат для пересылки сообщения', 'info');
+        }
+
+        function copyMessageText(message) {
+            navigator.clipboard.writeText(message.text)
+                .then(() => showNotification('Текст скопирован в буфер обмена', 'success'))
+                .catch(() => showNotification('Не удалось скопировать текст', 'error'));
+        }
+
+        function markMessageAsUnread(message) {
+            // В реальном приложении здесь будет логика отметки как непрочитанного
+            showNotification('Сообщение отмечено как непрочитанное', 'info');
+        }
+
+        function copyMessageLink(message) {
+            // В реальном приложении здесь будет генерация ссылки на сообщение
+            const link = `${window.location.origin}/message/${message.id}`;
+            navigator.clipboard.writeText(link)
+                .then(() => showNotification('Ссылка скопирована в буфер обмена', 'success'))
+                .catch(() => showNotification('Не удалось скопировать ссылку', 'error'));
+        }
+
+        function reportMessage(message) {
+            // В реальном приложении здесь будет логика отправки жалобы
+            showNotification('Жалоба на сообщение отправлена', 'info');
+        }
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Игнат загружен!');
+            console.log('🚀 Quantum загружен!');
+            
+            // Скрываем экран загрузки через 2 секунды
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                
+                // Восстанавливаем сессию
+                currentUser = db.restoreSession();
+                if (currentUser) {
+                    messengerContainer.style.display = 'block';
+                    landingPage.style.display = 'none';
+                    authContainer.style.display = 'none';
+                    
+                    document.getElementById('user-avatar').textContent = currentUser.avatar;
+                    document.getElementById('user-name').textContent = currentUser.username;
+                    
+                    if (currentUser.customAvatar) {
+                        document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.customAvatar})`;
+                        document.getElementById('user-avatar').textContent = '';
+                    }
+                    
+                    loadUserChats();
+                    startOnlineUpdates();
+                    showNotification(`С возвращением, ${currentUser.username}!`, 'success');
+                } else {
+                    landingPage.style.display = 'block';
+                    authContainer.style.display = 'none';
+                    messengerContainer.style.display = 'none';
+                }
+            }, 2000);
             
             // Восстанавливаем тему
             const savedTheme = getTheme();
@@ -3472,30 +4338,6 @@
             const savedWallpaper = getWallpaper();
             setWallpaper(savedWallpaper);
             
-            // Восстанавливаем сессию
-            currentUser = db.restoreSession();
-            if (currentUser) {
-                messengerContainer.style.display = 'block';
-                landingPage.style.display = 'none';
-                authContainer.style.display = 'none';
-                
-                document.getElementById('user-avatar').textContent = currentUser.avatar;
-                document.getElementById('user-name').textContent = currentUser.username;
-                
-                if (currentUser.customAvatar) {
-                    document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.customAvatar})`;
-                    document.getElementById('user-avatar').textContent = '';
-                }
-                
-                loadUserChats();
-                startOnlineUpdates();
-                showNotification(`С возвращением, ${currentUser.username}!`, 'success');
-            } else {
-                landingPage.style.display = 'block';
-                authContainer.style.display = 'none';
-                messengerContainer.style.display = 'none';
-            }
-
             // Добавляем ripple эффект ко всем кнопкам
             const buttons = document.querySelectorAll('.btn-3d, .auth-btn, .action-btn, .send-btn, .close-modal');
             buttons.forEach(button => {
@@ -3535,7 +4377,7 @@
             });
 
             document.getElementById('learn-more-btn').addEventListener('click', function() {
-                showNotification('Игнат - это современный мессенджер с шифрованием, быстрой доставкой сообщений и удобным интерфейсом!', 'info');
+                showNotification('Quantum - это современный мессенджер с шифрованием, быстрой доставкой сообщений и удобным интерфейсом!', 'info');
             });
 
             // Кнопка "Назад" на странице аутентификации
@@ -3655,7 +4497,7 @@
                 await loadUserChats();
                 startOnlineUpdates();
                 
-                showNotification('Аккаунт создан! Добро пожаловать в Игнат!', 'success');
+                showNotification('Аккаунт создан! Добро пожаловать в Quantum!', 'success');
             });
 
             // Вход
@@ -3991,10 +4833,29 @@
                 }
             });
 
-            // Автоматическое изменение высоты textarea
+            // Анимация поля ввода
+            document.getElementById('message-input').addEventListener('focus', function() {
+                expandInput();
+            });
+
+            document.getElementById('message-input').addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    // Задержка перед сжатием, чтобы пользователь мог кликнуть на кнопку отправки
+                    clearTimeout(inputAnimationTimeout);
+                    inputAnimationTimeout = setTimeout(() => {
+                        collapseInput();
+                    }, 300);
+                }
+            });
+
             document.getElementById('message-input').addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
+                
+                // Автоматическое расширение при вводе текста
+                if (this.value.trim() !== '' && !isInputExpanded) {
+                    expandInput();
+                }
             });
 
             // Поиск
@@ -4048,6 +4909,14 @@
             document.getElementById('audio-toggle-btn').addEventListener('click', toggleAudio);
             document.getElementById('video-toggle-btn').addEventListener('click', toggleVideo);
             document.getElementById('audio-call-toggle-btn').addEventListener('click', toggleAudio);
+
+            // Закрепленные сообщения
+            document.getElementById('unpin-message-btn').addEventListener('click', unpinMessage);
+            document.getElementById('show-in-chat-btn').addEventListener('click', showInChat);
+
+            // Подтверждение удаления
+            document.getElementById('cancel-delete-btn').addEventListener('click', hideDeleteConfirmation);
+            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
 
             // Сохранение сессии при закрытии страницы
             window.addEventListener('beforeunload', function() {
@@ -4156,7 +5025,7 @@
             contextMenu.style.left = e.pageX + 'px';
             contextMenu.style.top = e.pageY + 'px';
             contextMenu.style.background = 'var(--card-blue)';
-            contextMenu.style.border = '1px solid rgba(0, 212, 255, 0.3)';
+            contextMenu.style.border = '1px solid rgba(107, 99, 181, 0.3)';
             contextMenu.style.borderRadius = '10px';
             contextMenu.style.padding = '10px';
             contextMenu.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
@@ -4392,6 +5261,7 @@
             document.getElementById('send-btn').disabled = false;
             
             await loadChatMessages(chatId);
+            await displayPinnedMessage(chatId);
         }
 
         async function loadChatMessages(chatId) {
@@ -4400,13 +5270,6 @@
             const voiceMessages = await db.getChatVoiceMessages(chatId);
             
             container.innerHTML = '';
-            
-            // Проверяем, есть ли закрепленное сообщение
-            const pinnedMsg = messages.find(msg => msg.pinned);
-            if (pinnedMsg) {
-                pinnedMessage = pinnedMsg;
-                addPinnedIndicator(pinnedMsg);
-            }
             
             if (messages.length === 0 && voiceMessages.length === 0) {
                 container.innerHTML = `
@@ -4433,26 +5296,6 @@
             scrollToBottom();
         }
 
-        function addPinnedIndicator(message) {
-            const container = document.getElementById('chat-messages');
-            const pinnedElement = document.createElement('div');
-            pinnedElement.className = 'pinned-indicator';
-            pinnedElement.innerHTML = `
-                <i class="fas fa-thumbtack"></i>
-                <span>Закрепленное сообщение</span>
-                <button class="message-action" onclick="unpinMessage()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            // Вставляем в начало списка сообщений
-            if (container.firstChild) {
-                container.insertBefore(pinnedElement, container.firstChild);
-            } else {
-                container.appendChild(pinnedElement);
-            }
-        }
-
         function addMessageToChat(message, animate = true) {
             const container = document.getElementById('chat-messages');
             const isSent = message.senderId === currentUser.id;
@@ -4460,6 +5303,11 @@
             const messageElement = document.createElement('div');
             messageElement.className = `message ${isSent ? 'sent' : 'received'} ${message.pinned ? 'pinned' : ''} ${message.replyTo ? 'reply' : ''} ${message.uploading ? 'uploading' : ''}`;
             messageElement.dataset.messageId = message.id;
+            
+            // Добавляем обработчик контекстного меню
+            messageElement.addEventListener('contextmenu', function(e) {
+                showMessageContextMenu(e, message);
+            });
             
             const time = new Date(message.timestamp).toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
@@ -4516,14 +5364,7 @@
                 <div>${messageContent}</div>
                 <div class="message-time">${time}</div>
                 ${isSent ? '<div class="message-status"><i class="fas fa-check-double"></i> Прочитано</div>' : ''}
-                <div class="message-actions">
-                    <button class="message-action" onclick="replyToMessage('${message.id}')" title="Ответить">
-                        <i class="fas fa-reply"></i>
-                    </button>
-                    ${!message.pinned ? `<button class="message-action" onclick="pinMessage('${message.id}')" title="Закрепить">
-                        <i class="fas fa-thumbtack"></i>
-                    </button>` : ''}
-                </div>
+                
             `;
             
             if (animate) {
@@ -4541,6 +5382,11 @@
             const messageElement = document.createElement('div');
             messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
             messageElement.dataset.voiceMessageId = voiceMessage.id;
+            
+            // Добавляем обработчик контекстного меню
+            messageElement.addEventListener('contextmenu', function(e) {
+                showMessageContextMenu(e, voiceMessage);
+            });
             
             const time = new Date(voiceMessage.timestamp).toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
@@ -4642,35 +5488,6 @@
             }
         }
 
-        function pinMessage(messageId) {
-            const message = getMessageById(messageId);
-            if (!message) return;
-            
-            // Снимаем закрепление с предыдущего сообщения
-            if (pinnedMessage) {
-                db.updateMessage(pinnedMessage.id, { pinned: false });
-            }
-            
-            // Закрепляем новое сообщение
-            db.updateMessage(messageId, { pinned: true });
-            pinnedMessage = message;
-            
-            // Обновляем интерфейс
-            loadChatMessages(currentChat);
-            showNotification('Сообщение закреплено', 'success');
-        }
-
-        function unpinMessage() {
-            if (!pinnedMessage) return;
-            
-            db.updateMessage(pinnedMessage.id, { pinned: false });
-            pinnedMessage = null;
-            
-            // Обновляем интерфейс
-            loadChatMessages(currentChat);
-            showNotification('Сообщение откреплено', 'info');
-        }
-
         function getFileIcon(fileType) {
             if (fileType.startsWith('image/')) return 'file-image';
             if (fileType.startsWith('video/')) return 'file-video';
@@ -4740,6 +5557,9 @@
             if (replyingToMessage) {
                 cancelReply();
             }
+            
+            // Сжимаем поле ввода
+            collapseInput();
             
             await loadUserChats();
         }
@@ -4831,7 +5651,7 @@
             let previewContent = '';
             if (file.type.startsWith('image/')) {
                 previewContent = `
-                    <img src="${URL.createObjectURL(file)}" alt="${file.name}">
+                    <img src="" alt="${file.name}">
                 `;
             } else {
                 previewContent = `
@@ -5316,6 +6136,155 @@
                 simulateIncomingCall();
             }
         }, 10000);
-    </script>
+    
+})();
+</script>
+
+<!-- Reactions menu (injected) -->
+<div id="reactions-menu" class="reactions-menu" aria-hidden="true">
+    <span data-reaction="👍" title="Лайк">👍</span>
+    <span data-reaction="❤️" title="Сердечко">❤️</span>
+    <span data-reaction="🔥" title="Огонёк">🔥</span>
+    <span data-reaction="👎" title="Дизлайк">👎</span>
+    <span data-reaction="🤡" title="Клоун">🤡</span>
+</div>
+
+<script>
+// --- Reactions UI logic (injected) ---
+// --- Reactions UI logic (injected) ---
+document.addEventListener('DOMContentLoaded', function() {
+    const reactionsMenu = document.getElementById('reactions-menu');
+    let currentMessageEl = null;
+
+    // store last context menu position so reaction picker can be placed next to it
+    window.lastContextMenuPos = window.lastContextMenuPos || null;
+
+    // helper: find DOM element for message object
+    function getMessageElementByMessage(message) {
+        if (!message) return null;
+        // standard message id
+        if (message.id) {
+            const el = document.querySelector(`[data-message-id="${message.id}"]`);
+            if (el) return el;
+            const v = document.querySelector(`[data-voice-message-id="${message.id}"]`);
+            if (v) return v;
+        }
+        // fallback: try matching by timestamp or text (best-effort)
+        if (message.timestamp) {
+            const nodes = Array.from(document.querySelectorAll('.message'));
+            return nodes.find(n => n.querySelector('.message-time') && n.querySelector('.message-time').innerText.includes(new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}))) || null;
+        }
+        return null;
+    }
+
+    // show reaction picker for a message object (from context menu)
+    window.showReactionPicker = function(message) {
+        const msgEl = getMessageElementByMessage(message);
+        if (!msgEl) {
+            // If we can't find the DOM element, just show at center
+            currentMessageEl = null;
+            reactionsMenu.style.left = (window.innerWidth/2 - reactionsMenu.offsetWidth/2) + 'px';
+            reactionsMenu.style.top = (window.innerHeight/2 - reactionsMenu.offsetHeight/2) + 'px';
+            reactionsMenu.style.display = 'flex';
+            reactionsMenu.setAttribute('aria-hidden','false');
+            return;
+        }
+
+        currentMessageEl = msgEl;
+        // ensure reaction-list exists
+        if (!currentMessageEl.querySelector('.reaction-list')) {
+            const rl = document.createElement('div');
+            rl.className = 'reaction-list';
+            // insert after message content (at end)
+            currentMessageEl.appendChild(rl);
+        }
+
+        // position picker near the context menu if available, otherwise near message
+        if (window.lastContextMenuPos) {
+            const pos = window.lastContextMenuPos;
+            // place to the right of context menu if fits, otherwise above it
+            let left = pos.x + pos.width + 8;
+            if (left + reactionsMenu.offsetWidth > window.innerWidth) {
+                left = Math.max(8, pos.x - reactionsMenu.offsetWidth - 8);
+            }
+            let top = pos.y;
+            if (top + reactionsMenu.offsetHeight > window.innerHeight) {
+                top = Math.max(8, window.innerHeight - reactionsMenu.offsetHeight - 8);
+            }
+            reactionsMenu.style.left = left + 'px';
+            reactionsMenu.style.top = top + 'px';
+        } else {
+            const rect = currentMessageEl.getBoundingClientRect();
+            let left = rect.right + 8;
+            if (left + reactionsMenu.offsetWidth > window.innerWidth) {
+                left = Math.max(8, rect.left - reactionsMenu.offsetWidth - 8);
+            }
+            let top = rect.top;
+            reactionsMenu.style.left = left + 'px';
+            reactionsMenu.style.top = top + 'px';
+        }
+
+        reactionsMenu.style.display = 'flex';
+        reactionsMenu.setAttribute('aria-hidden','false');
+    };
+
+    // toggle reaction on the current message element
+    function toggleReactionOnMessage(msgEl, reaction) {
+        if (!msgEl) return;
+        let rl = msgEl.querySelector('.reaction-list');
+        if (!rl) {
+            rl = document.createElement('div');
+            rl.className = 'reaction-list';
+            msgEl.appendChild(rl);
+        }
+        const existing = rl.querySelector(`[data-r="${reaction}"]`);
+        if (existing) {
+            // toggle off
+            existing.remove();
+        } else {
+            // add reaction element (single-user reaction, no count)
+            const item = document.createElement('span');
+            item.className = 'reaction-item';
+            item.dataset.r = reaction;
+            item.innerText = reaction;
+            // allow manual removal by clicking the reaction itself
+            item.addEventListener('click', function(ev){
+                ev.stopPropagation();
+                item.remove();
+            });
+            rl.appendChild(item);
+        }
+    }
+
+    // click outside -> hide
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#reactions-menu') && !e.target.closest('.message-context-menu') && !e.target.closest('.message-action')) {
+            reactionsMenu.style.display = 'none';
+            reactionsMenu.setAttribute('aria-hidden', 'true');
+            // don't clear currentMessageEl to allow quick toggles
+        }
+    });
+
+    reactionsMenu.addEventListener('click', function(e) {
+        const r = e.target.dataset.reaction;
+        if (!r) return;
+        // toggle reaction
+        toggleReactionOnMessage(currentMessageEl, r);
+        // hide picker after selection
+        reactionsMenu.style.display = 'none';
+        reactionsMenu.setAttribute('aria-hidden','true');
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            reactionsMenu.style.display = 'none';
+            reactionsMenu.setAttribute('aria-hidden','true');
+        }
+    });
+});
+// --- end injected reactions script ---
+
+</script>
+
 </body>
 </html>
