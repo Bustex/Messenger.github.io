@@ -1,68 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- Supabase SDK + DB wrapper inserted by assistant -->
-    
-    <!-- Supabase loader + DB wrapper injected -->
-    <script>
-    (function(){
-        const SUPABASE_URL = 'https://fonntroenitffyfvclqt.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbm50cm9lbml0ZmZ5ZnZjbHF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzMDEwMjIsImV4cCI6MjA3ODg3NzAyMn0.8cUhWygGe_do4US4GISBcBWywA7PyKuVCSixzTFVyfU';
-
-        function createDB() {
-            window.supabase = supabase;
-            const sup = window.supabase;
-            class SupabaseDB {
-                constructor(){ this.supabase = sup; }
-                async getUsers(){ const {data,error}=await this.supabase.from('profiles').select('*').order('username'); if(error){console.error(error);return[];} return data||[]; }
-                async getUserById(id){ const {data,error}=await this.supabase.from('profiles').select('*').eq('id',id).maybeSingle(); if(error){console.error(error);return null;} return data||null;}
-                async getUserChats(userId){ const {data,error}=await this.supabase.from('chats').select('*').contains('participants',[userId]).order('last_message_time',{ascending:false}); if(error){console.error(error);return[];} return data||[]; }
-                async updateChat(chatId,patch){ const {error}=await this.supabase.from('chats').update(patch).eq('id',chatId); if(error)console.error('updateChat',error); }
-                async addMessage(message){
-                    const row={ id: message.id, chat_id: message.chatId, sender_id: message.senderId, sender_name: message.senderName, text: message.text||'', timestamp: message.timestamp||new Date().toISOString(), reply_to: message.replyTo||null, pinned: message.pinned||false, metadata: message.metadata||{} };
-                    if(message.file && message.file.url){ row.file_url=message.file.url; row.file_name=message.file.name||''; row.file_type=message.file.type||''; row.file_size=message.file.size||0; }
-                    const {error}=await this.supabase.from('messages').insert(row);
-                    if(error) console.error('addMessage insert', error);
-                    return message.id;
-                }
-                async getChatMessages(chatId){ const {data,error}=await this.supabase.from('messages').select('*').eq('chat_id',chatId).order('timestamp',{ascending:true}); if(error){console.error('getChatMessages',error);return[];} return data||[]; }
-                async uploadFile(chatId,file){
-                    try{
-                        const path = `${chatId}/${file.name}_${Date.now()}`;
-                        const { error: upErr } = await this.supabase.storage.from('attachments').upload(path, file);
-                        if(upErr){console.error('storage upload', upErr); return null;}
-                        const { data } = this.supabase.storage.from('attachments').getPublicUrl(path);
-                        return data.publicUrl;
-                    }catch(e){console.error('uploadFile',e); return null;}
-                }
-            }
-            window.db = new SupabaseDB();
-        }
-
-        // if supabase already present (CDN loaded), init; else load CDN then init
-        if(window.supabase && window.supabase.createClient){
-            window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            createDB();
-        } else {
-            const s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js';
-            s.onload = function(){
-                try{
-                    window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    createDB();
-                }catch(e){ console.error('Supabase init error', e); }
-            };
-            s.onerror = function(e){ console.error('Failed to load supabase script', e); };
-            document.head.appendChild(s);
-        }
-    })();
-    </script>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum - Безопасный и быстрый мессенджер</title>
+    <title>Игнат - Безопасный и быстрый мессенджер</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* Обновленная цветовая схема */
         :root {
@@ -989,6 +932,30 @@
             height: 100px;
             bottom: 20%;
             right: 10%;
+            animation-delay: 3s;
+        }
+
+        .messenger-floating:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        .messenger-floating:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 30%;
+            left: 70%;
+            animation-delay: 1s;
+        }
+
+        .messenger-floating:nth-child(5) {
+            width: 70px;
+            height: 70px;
+            top: 50%;
+            left: 40%;
             animation-delay: 3s;
         }
 
@@ -3044,12 +3011,12 @@
 }
 /* --- END PATCH --- */
 
-</style>
+    </style>
 </head>
 <body>
     <!-- Экран загрузки -->
     <div class="loading-screen" id="loading-screen">
-        <div class="loading-logo">Quantum</div>
+        <div class="loading-logo">ИГНАТ</div>
         <div class="loading-spinner"></div>
         <div class="loading-text">Загрузка<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
     </div>
@@ -3069,7 +3036,7 @@
         <header class="header">
             <div class="container">
                 <div class="header-content">
-                    <div class="logo">Quantum</div>
+                    <div class="logo">ИГНАТ</div>
                     <nav class="nav-links">
                         <a href="#" class="nav-link">Главная</a>
                         <a href="#" class="nav-link">Возможности</a>
@@ -3094,7 +3061,7 @@
             <div class="container">
                 <div class="hero-content">
                     <h1 class="hero-title">Безопасный и быстрый мессенджер</h1>
-                    <p class="hero-subtitle">Quantum предлагает современное решение для общения с полной защитой ваших данных. Быстрая доставка сообщений, шифрование и удобный интерфейс.</p>
+                    <p class="hero-subtitle">Игнат предлагает современное решение для общения с полной защитой ваших данных. Быстрая доставка сообщений, шифрование и удобный интерфейс.</p>
                     <div class="hero-buttons">
                         <button class="btn-3d btn-3d-primary" id="hero-register-btn">Начать общение</button>
                         <button class="btn-3d btn-3d-secondary" id="learn-more-btn">Узнать больше</button>
@@ -3134,7 +3101,7 @@
             <i class="fas fa-arrow-left"></i> На главную
         </button>
         
-        <div class="auth-form" id="login-form">
+        <form class="auth-form" id="login-form">
             <h2>Вход в аккаунт</h2>
             <div class="form-group">
                 <label for="login-username">Имя пользователя</label>
@@ -3154,9 +3121,9 @@
             <div class="auth-switch">
                 Нет аккаунта? <a href="#" id="switch-to-register">Создать новый</a>
             </div>
-        </div>
+        </form>
 
-        <div class="auth-form" id="register-form" style="display: none;">
+        <form class="auth-form" id="register-form" style="display: none;">
             <h2>Регистрация</h2>
             <div class="form-group">
                 <label for="register-username">Имя пользователя</label>
@@ -3206,7 +3173,7 @@
             <div class="auth-switch">
                 Уже есть аккаунт? <a href="#" id="switch-to-login">Войти</a>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Основной интерфейс мессенджера -->
@@ -3295,7 +3262,7 @@
                 
                 <div class="chat-messages custom-scrollbar" id="chat-messages">
                     <div class="welcome-message">
-                        <div class="welcome-title">Добро пожаловать в Quantum!</div>
+                        <div class="welcome-title">Добро пожаловать в Игнат!</div>
                         <div class="welcome-subtitle">
                             <p>Выберите чат из списка слева или начните новую беседу</p>
                             <p>Все сообщения сохраняются в защищенной базе данных</p>
@@ -3596,24 +3563,438 @@
         </div>
     </div>
 
+    <!-- Reactions menu -->
+    <div id="reactions-menu" class="reactions-menu" aria-hidden="true">
+        <span data-reaction="👍" title="Лайк">👍</span>
+        <span data-reaction="❤️" title="Сердечко">❤️</span>
+        <span data-reaction="🔥" title="Огонёк">🔥</span>
+        <span data-reaction="👎" title="Дизлайк">👎</span>
+        <span data-reaction="🤡" title="Клоун">🤡</span>
+    </div>
+
     <script>
-(async function app_main(){
-    // wait for supabase db to be ready
-    await new Promise((resolve, reject) => {
-        if (window.db) return resolve();
-        let waited = 0;
-        const iv = setInterval(() => {
-            if (window.db) { clearInterval(iv); return resolve(); }
-            waited += 50;
-            if (waited > 15000) { clearInterval(iv); return reject(new Error('Supabase DB init timeout')); }
-        }, 50);
-    }).catch(err => { console.error(err); });
-    const db = window.db;
-
-
-        // Упрощенная база данных на localStorage
-
+        // Инициализация Supabase
+        const SUPABASE_URL = 'https://uwaserqrrgziltmfhuls.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3YXNlcnFycmd6aWx0bWZodWxzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNzU5MDEsImV4cCI6MjA3ODk1MTkwMX0.3rAslm271cqT-vHYARVO0xmpY-sFtKy3N6wQy_jLR_Y';
         
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Класс для работы с Supabase вместо localStorage
+        class IgnatDB {
+            constructor() {
+                this.supabase = supabase;
+            }
+
+            async addUser(user) {
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .insert([user])
+                    .select();
+                
+                if (error) {
+                    console.error('Error creating user:', error);
+                    throw error;
+                }
+                return data[0];
+            }
+
+            async getUserByUsername(username) {
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('username', username)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching user:', error);
+                }
+                return data;
+            }
+
+            async getUserById(userId) {
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching user by ID:', error);
+                    return null;
+                }
+                return data;
+            }
+
+            async getAllUsers() {
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .select('*');
+                
+                if (error) {
+                    console.error('Error fetching users:', error);
+                    return [];
+                }
+                return data || [];
+            }
+
+            async searchUsers(query) {
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .select('*')
+                    .ilike('username', `%${query}%`);
+                
+                if (error) {
+                    console.error('Error searching users:', error);
+                    return [];
+                }
+                return data || [];
+            }
+
+            async updateUser(userId, updates) {
+                const { data, error } = await this.supabase
+                    .from('users')
+                    .update(updates)
+                    .eq('id', userId)
+                    .select();
+                
+                if (error) {
+                    console.error('Error updating user:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async getSettings(userId) {
+                const { data, error } = await this.supabase
+                    .from('user_settings')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching settings:', error);
+                }
+                return data ? data.settings : {};
+            }
+
+            async saveSettings(userId, newSettings) {
+                const { data, error } = await this.supabase
+                    .from('user_settings')
+                    .upsert({
+                        user_id: userId,
+                        settings: newSettings,
+                        updated_at: new Date().toISOString()
+                    });
+                
+                if (error) {
+                    console.error('Error saving settings:', error);
+                }
+            }
+
+            async addChat(chat) {
+                const { data, error } = await this.supabase
+                    .from('chats')
+                    .insert([chat])
+                    .select();
+                
+                if (error) {
+                    console.error('Error creating chat:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async getChat(chatId) {
+                const { data, error } = await this.supabase
+                    .from('chats')
+                    .select('*')
+                    .eq('id', chatId)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching chat:', error);
+                    return null;
+                }
+                return data;
+            }
+
+            async getUserChats(userId) {
+                const { data, error } = await this.supabase
+                    .from('chats')
+                    .select('*')
+                    .contains('participants', [userId]);
+                
+                if (error) {
+                    console.error('Error fetching user chats:', error);
+                    return [];
+                }
+                
+                // Сортируем по времени последнего сообщения
+                return (data || []).sort((a, b) => 
+                    new Date(b.last_message_time || b.created_at) - new Date(a.last_message_time || a.created_at)
+                );
+            }
+
+            async findChatBetweenUsers(user1Id, user2Id) {
+                const { data, error } = await this.supabase
+                    .from('chats')
+                    .select('*')
+                    .contains('participants', [user1Id, user2Id])
+                    .eq('is_group', false);
+                
+                if (error) {
+                    console.error('Error finding chat:', error);
+                    return null;
+                }
+                return data && data.length > 0 ? data[0] : null;
+            }
+
+            async updateChat(chatId, updates) {
+                const { data, error } = await this.supabase
+                    .from('chats')
+                    .update(updates)
+                    .eq('id', chatId)
+                    .select();
+                
+                if (error) {
+                    console.error('Error updating chat:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async addMessage(message) {
+                const { data, error } = await this.supabase
+                    .from('messages')
+                    .insert([message])
+                    .select();
+                
+                if (error) {
+                    console.error('Error adding message:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async getChatMessages(chatId) {
+                const { data, error } = await this.supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('chat_id', chatId)
+                    .order('created_at', { ascending: true });
+                
+                if (error) {
+                    console.error('Error fetching messages:', error);
+                    return [];
+                }
+                return data || [];
+            }
+
+            async getLastMessage(chatId) {
+                const { data, error } = await this.supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('chat_id', chatId)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching last message:', error);
+                }
+                return data;
+            }
+
+            async updateMessage(messageId, updates) {
+                const { data, error } = await this.supabase
+                    .from('messages')
+                    .update(updates)
+                    .eq('id', messageId)
+                    .select();
+                
+                if (error) {
+                    console.error('Error updating message:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async addFile(file) {
+                const { data, error } = await this.supabase
+                    .from('files')
+                    .insert([file])
+                    .select();
+                
+                if (error) {
+                    console.error('Error adding file:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async getFile(fileId) {
+                const { data, error } = await this.supabase
+                    .from('files')
+                    .select('*')
+                    .eq('id', fileId)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching file:', error);
+                    return null;
+                }
+                return data;
+            }
+
+            async addVoiceMessage(voiceMessage) {
+                const { data, error } = await this.supabase
+                    .from('voice_messages')
+                    .insert([voiceMessage])
+                    .select();
+                
+                if (error) {
+                    console.error('Error adding voice message:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async getChatVoiceMessages(chatId) {
+                const { data, error } = await this.supabase
+                    .from('voice_messages')
+                    .select('*')
+                    .eq('chat_id', chatId)
+                    .order('created_at', { ascending: true });
+                
+                if (error) {
+                    console.error('Error fetching voice messages:', error);
+                    return [];
+                }
+                return data || [];
+            }
+
+            async blockUser(userId, targetUserId) {
+                const { error } = await this.supabase
+                    .from('blocked_users')
+                    .insert({
+                        user_id: userId,
+                        blocked_user_id: targetUserId,
+                        created_at: new Date().toISOString()
+                    });
+                
+                if (error) {
+                    console.error('Error blocking user:', error);
+                }
+            }
+
+            async unblockUser(userId, targetUserId) {
+                const { error } = await this.supabase
+                    .from('blocked_users')
+                    .delete()
+                    .eq('user_id', userId)
+                    .eq('blocked_user_id', targetUserId);
+                
+                if (error) {
+                    console.error('Error unblocking user:', error);
+                }
+            }
+
+            async getBlockedUsers(userId) {
+                const { data, error } = await this.supabase
+                    .from('blocked_users')
+                    .select('blocked_user_id')
+                    .eq('user_id', userId);
+                
+                if (error) {
+                    console.error('Error fetching blocked users:', error);
+                    return [];
+                }
+                return data.map(item => item.blocked_user_id);
+            }
+
+            async isUserBlocked(userId, targetUserId) {
+                const { data, error } = await this.supabase
+                    .from('blocked_users')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .eq('blocked_user_id', targetUserId)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error checking if user is blocked:', error);
+                }
+                return !!data;
+            }
+
+            async pinMessage(chatId, messageId) {
+                const { data, error } = await this.supabase
+                    .from('pinned_messages')
+                    .upsert({
+                        chat_id: chatId,
+                        message_id: messageId,
+                        pinned_at: new Date().toISOString()
+                    })
+                    .select();
+                
+                if (error) {
+                    console.error('Error pinning message:', error);
+                    return null;
+                }
+                return data[0];
+            }
+
+            async unpinMessage(chatId) {
+                const { error } = await this.supabase
+                    .from('pinned_messages')
+                    .delete()
+                    .eq('chat_id', chatId);
+                
+                if (error) {
+                    console.error('Error unpinning message:', error);
+                }
+            }
+
+            async getPinnedMessage(chatId) {
+                const { data, error } = await this.supabase
+                    .from('pinned_messages')
+                    .select('message_id')
+                    .eq('chat_id', chatId)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching pinned message:', error);
+                    return null;
+                }
+                
+                if (data) {
+                    return this.getMessageById(data.message_id);
+                }
+                return null;
+            }
+
+            // Вспомогательный метод для получения сообщения по ID
+            async getMessageById(messageId) {
+                const { data, error } = await this.supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('id', messageId)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching message by ID:', error);
+                    return null;
+                }
+                return data;
+            }
+
+            // Очистка данных (для демонстрационных целей)
+            async clearDatabase() {
+                // В реальном приложении эта функция должна быть защищена
+                // и доступна только администраторам
+                console.warn('Database clear function called - this would delete all data in a real app');
+            }
+        }
+
         // Валидация
         function validateUsername(username) {
             const regex = /^[a-zA-Z0-9]{3,20}$/;
@@ -3845,7 +4226,7 @@
         }
 
         // Инициализация
-        
+        const db = new IgnatDB();
         let currentUser = null;
         let currentChat = null;
         let updateInterval = null;
@@ -3926,7 +4307,7 @@
         async function pinMessage(messageId) {
             if (!currentChat) return;
             
-            const message = getMessageById(messageId);
+            const message = await db.getMessageById(messageId);
             if (!message) return;
             
             // Снимаем закрепление с предыдущего сообщения
@@ -4032,9 +4413,17 @@
             if (!contextMenuMessage) return;
             
             // Удаляем сообщение из базы данных
-            const messages = db.getMessages();
-            const updatedMessages = messages.filter(msg => msg.id !== contextMenuMessage.id);
-            localStorage.setItem('ignat_messages', JSON.stringify(updatedMessages));
+            // В Supabase это делается через delete запрос
+            const { error } = await supabase
+                .from('messages')
+                .delete()
+                .eq('id', contextMenuMessage.id);
+            
+            if (error) {
+                console.error('Error deleting message:', error);
+                showNotification('Ошибка при удалении сообщения', 'error');
+                return;
+            }
             
             // Если удаляем закрепленное сообщение, открепляем его
             if (pinnedMessage && pinnedMessage.id === contextMenuMessage.id) {
@@ -4050,7 +4439,7 @@
             hideDeleteConfirmation();
         }
 
-        // ИСПРАВЛЕННАЯ ФУНКЦИЯ для показа контекстного меню сообщения
+        // Функция для показа контекстного меню сообщения
         function showMessageContextMenu(e, message) {
             e.preventDefault();
             e.stopPropagation();
@@ -4073,7 +4462,7 @@
             
             // Предварительно рассчитываем размеры меню
             const menuWidth = 220;
-            const menuHeight = 400; // Примерная высота
+            const menuHeight = 400;
             
             // Проверяем, чтобы меню не выходило за правый край
             if (posX + menuWidth > window.innerWidth) {
@@ -4088,7 +4477,7 @@
             contextMenu.style.left = posX + 'px';
             contextMenu.style.top = posY + 'px';
             
-            const isSent = message.senderId === currentUser.id;
+            const isSent = message.sender_id === currentUser.id;
             
             // Создаем пункты меню
             const menuItems = [];
@@ -4297,30 +4686,38 @@
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Quantum загружен!');
+            console.log('🚀 Игнат загружен! Подключен к Supabase');
             
             // Скрываем экран загрузки через 2 секунды
             setTimeout(() => {
                 loadingScreen.classList.add('hidden');
                 
-                // Восстанавливаем сессию
-                currentUser = db.restoreSession();
-                if (currentUser) {
-                    messengerContainer.style.display = 'block';
-                    landingPage.style.display = 'none';
-                    authContainer.style.display = 'none';
-                    
-                    document.getElementById('user-avatar').textContent = currentUser.avatar;
-                    document.getElementById('user-name').textContent = currentUser.username;
-                    
-                    if (currentUser.customAvatar) {
-                        document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.customAvatar})`;
-                        document.getElementById('user-avatar').textContent = '';
+                // Проверяем, есть ли сохраненная сессия
+                const savedUser = localStorage.getItem('ignat_current_user');
+                if (savedUser) {
+                    try {
+                        currentUser = JSON.parse(savedUser);
+                        messengerContainer.style.display = 'block';
+                        landingPage.style.display = 'none';
+                        authContainer.style.display = 'none';
+                        
+                        document.getElementById('user-avatar').textContent = currentUser.avatar;
+                        document.getElementById('user-name').textContent = currentUser.username;
+                        
+                        if (currentUser.custom_avatar) {
+                            document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.custom_avatar})`;
+                            document.getElementById('user-avatar').textContent = '';
+                        }
+                        
+                        loadUserChats();
+                        startOnlineUpdates();
+                        showNotification(`С возвращением, ${currentUser.username}!`, 'success');
+                    } catch (e) {
+                        console.error('Error restoring session:', e);
+                        landingPage.style.display = 'block';
+                        authContainer.style.display = 'none';
+                        messengerContainer.style.display = 'none';
                     }
-                    
-                    loadUserChats();
-                    startOnlineUpdates();
-                    showNotification(`С возвращением, ${currentUser.username}!`, 'success');
                 } else {
                     landingPage.style.display = 'block';
                     authContainer.style.display = 'none';
@@ -4377,7 +4774,7 @@
             });
 
             document.getElementById('learn-more-btn').addEventListener('click', function() {
-                showNotification('Quantum - это современный мессенджер с шифрованием, быстрой доставкой сообщений и удобным интерфейсом!', 'info');
+                showNotification('Игнат - это современный мессенджер с шифрованием, быстрой доставкой сообщений и удобным интерфейсом!', 'info');
             });
 
             // Кнопка "Назад" на странице аутентификации
@@ -4473,31 +4870,40 @@
                     username: username,
                     password: password,
                     avatar: username.substring(0, 2).toUpperCase(),
-                    isOnline: true,
-                    lastSeen: new Date().toISOString(),
-                    customAvatar: null,
+                    is_online: true,
+                    last_seen: new Date().toISOString(),
+                    custom_avatar: null,
                     status: 'online',
-                    bio: ''
+                    bio: '',
+                    created_at: new Date().toISOString()
                 };
 
-                await db.addUser(user);
-                currentUser = user;
-                
-                await db.saveSettings(currentUser.id, {
-                    theme: getTheme(),
-                    notifications: 'all'
-                });
-                
-                authContainer.style.display = 'none';
-                messengerContainer.style.display = 'block';
-                
-                document.getElementById('user-avatar').textContent = currentUser.avatar;
-                document.getElementById('user-name').textContent = currentUser.username;
-                
-                await loadUserChats();
-                startOnlineUpdates();
-                
-                showNotification('Аккаунт создан! Добро пожаловать в Quantum!', 'success');
+                try {
+                    const newUser = await db.addUser(user);
+                    currentUser = newUser;
+                    
+                    await db.saveSettings(currentUser.id, {
+                        theme: getTheme(),
+                        notifications: 'all'
+                    });
+                    
+                    // Сохраняем сессию
+                    localStorage.setItem('ignat_current_user', JSON.stringify(currentUser));
+                    
+                    authContainer.style.display = 'none';
+                    messengerContainer.style.display = 'block';
+                    
+                    document.getElementById('user-avatar').textContent = currentUser.avatar;
+                    document.getElementById('user-name').textContent = currentUser.username;
+                    
+                    await loadUserChats();
+                    startOnlineUpdates();
+                    
+                    showNotification('Аккаунт создан! Добро пожаловать в Игнат!', 'success');
+                } catch (error) {
+                    console.error('Error creating user:', error);
+                    showNotification('Ошибка при создании аккаунта', 'error');
+                }
             });
 
             // Вход
@@ -4518,11 +4924,12 @@
 
                 currentUser = user;
                 await db.updateUser(user.id, { 
-                    isOnline: true,
-                    lastSeen: new Date().toISOString()
+                    is_online: true,
+                    last_seen: new Date().toISOString()
                 });
                 
-                db.saveSession(currentUser);
+                // Сохраняем сессию
+                localStorage.setItem('ignat_current_user', JSON.stringify(currentUser));
                 
                 authContainer.style.display = 'none';
                 messengerContainer.style.display = 'block';
@@ -4530,8 +4937,8 @@
                 document.getElementById('user-avatar').textContent = currentUser.avatar;
                 document.getElementById('user-name').textContent = currentUser.username;
                 
-                if (currentUser.customAvatar) {
-                    document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.customAvatar})`;
+                if (currentUser.custom_avatar) {
+                    document.getElementById('user-avatar').style.backgroundImage = `url(${currentUser.custom_avatar})`;
                     document.getElementById('user-avatar').textContent = '';
                 }
                 
@@ -4545,10 +4952,10 @@
             document.getElementById('logout-btn').addEventListener('click', async function() {
                 if (currentUser) {
                     await db.updateUser(currentUser.id, { 
-                        isOnline: false,
-                        lastSeen: new Date().toISOString()
+                        is_online: false,
+                        last_seen: new Date().toISOString()
                     });
-                    db.clearSession();
+                    localStorage.removeItem('ignat_current_user');
                 }
                 
                 currentUser = null;
@@ -4676,10 +5083,10 @@
                         avatarOptions.innerHTML = '';
                         avatarOptions.appendChild(newAvatarOption);
                         
-                        currentUser.customAvatar = avatarUrl;
+                        currentUser.custom_avatar = avatarUrl;
                         currentUser.avatar = 'IMG';
                         db.updateUser(currentUser.id, {
-                            customAvatar: avatarUrl,
+                            custom_avatar: avatarUrl,
                             avatar: 'IMG'
                         });
                         
@@ -4742,10 +5149,10 @@
                 
                 if (selectedAvatar && selectedAvatar.dataset.avatar) {
                     currentUser.avatar = selectedAvatar.dataset.avatar;
-                    currentUser.customAvatar = null;
+                    currentUser.custom_avatar = null;
                     await db.updateUser(currentUser.id, {
                         avatar: currentUser.avatar,
-                        customAvatar: null
+                        custom_avatar: null
                     });
                     
                     document.getElementById('user-avatar').style.backgroundImage = '';
@@ -4922,7 +5329,7 @@
             window.addEventListener('beforeunload', function() {
                 if (currentUser) {
                     db.updateUser(currentUser.id, {
-                        lastSeen: new Date().toISOString()
+                        last_seen: new Date().toISOString()
                     });
                 }
             });
@@ -4951,18 +5358,18 @@
                 const chatItem = document.createElement('div');
                 chatItem.className = `chat-item ${currentChat === chat.id ? 'active' : ''}`;
                 
-                if (chat.isGroup) {
+                if (chat.is_group) {
                     // Для групповых чатов
                     chatItem.innerHTML = `
                         <div class="avatar" style="background: var(--accent-purple);"><i class="fas fa-users"></i></div>
                         <div class="chat-info">
                             <div class="chat-name">
-                                ${chat.groupInfo.name}
-                                <span style="font-size: 0.8rem; color: var(--text-gray);">@${chat.groupInfo.username}</span>
+                                ${chat.group_info.name}
+                                <span style="font-size: 0.8rem; color: var(--text-gray);">@${chat.group_info.username}</span>
                             </div>
-                            <div class="last-message">${chat.lastMessage || 'Групповой чат'}</div>
+                            <div class="last-message">${chat.last_message || 'Групповой чат'}</div>
                         </div>
-                        <div class="chat-time">${new Date(chat.lastMessageTime).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="chat-time">${new Date(chat.last_message_time || chat.created_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
                     `;
                 } else {
                     // Для личных чатов
@@ -4972,24 +5379,24 @@
                     if (!otherUser) continue;
                     
                     // Проверка на блокировку
-                    const isBlocked = db.isUserBlocked(currentUser.id, otherUserId);
+                    const isBlocked = await db.isUserBlocked(currentUser.id, otherUserId);
                     
                     let avatarContent = isBlocked ? '?' : otherUser.avatar;
                     let avatarStyle = '';
-                    if (!isBlocked && otherUser.customAvatar) {
+                    if (!isBlocked && otherUser.custom_avatar) {
                         avatarContent = '';
-                        avatarStyle = `background-image: url(${otherUser.customAvatar})`;
+                        avatarStyle = `background-image: url(${otherUser.custom_avatar})`;
                     }
                     
                     chatItem.innerHTML = `
-                        <div class="avatar ${isBlocked ? 'offline' : (isUserOnline(otherUser.lastSeen) ? otherUser.status || 'online' : 'offline')}" style="${avatarStyle}">${avatarContent}</div>
+                        <div class="avatar ${isBlocked ? 'offline' : (isUserOnline(otherUser.last_seen) ? otherUser.status || 'online' : 'offline')}" style="${avatarStyle}">${avatarContent}</div>
                         <div class="chat-info">
                             <div class="chat-name">
                                 ${isBlocked ? 'Заблокированный пользователь' : otherUser.username}
                             </div>
-                            <div class="last-message">${chat.lastMessage || 'Чат начат'}</div>
+                            <div class="last-message">${chat.last_message || 'Чат начат'}</div>
                         </div>
-                        <div class="chat-time">${new Date(chat.lastMessageTime).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="chat-time">${new Date(chat.last_message_time || chat.created_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}</div>
                     `;
                 }
                 
@@ -4998,9 +5405,9 @@
                 });
                 
                 // Добавляем контекстное меню для блокировки
-                if (!chat.isGroup) {
+                if (!chat.is_group) {
                     const otherUserId = chat.participants.find(id => id !== currentUser.id);
-                    const isBlocked = db.isUserBlocked(currentUser.id, otherUserId);
+                    const isBlocked = await db.isUserBlocked(currentUser.id, otherUserId);
                     
                     chatItem.addEventListener('contextmenu', function(e) {
                         e.preventDefault();
@@ -5081,7 +5488,7 @@
             // Если текущий чат с заблокированным пользователем, обновляем его
             if (currentChat) {
                 const chat = await db.getChat(currentChat);
-                if (chat && !chat.isGroup) {
+                if (chat && !chat.is_group) {
                     const otherUserId = chat.participants.find(id => id !== currentUser.id);
                     if (otherUserId === userId) {
                         loadChat(currentChat);
@@ -5100,7 +5507,7 @@
             // Если текущий чат с разблокированным пользователем, обновляем его
             if (currentChat) {
                 const chat = await db.getChat(currentChat);
-                if (chat && !chat.isGroup) {
+                if (chat && !chat.is_group) {
                     const otherUserId = chat.participants.find(id => id !== currentUser.id);
                     if (otherUserId === userId) {
                         loadChat(currentChat);
@@ -5112,36 +5519,38 @@
         function loadBlockedUsersList() {
             if (!currentUser) return;
             
-            const blockedUsers = db.getBlockedUsersList(currentUser.id);
             const container = document.getElementById('blocked-users-list');
             
             container.innerHTML = '';
             
-            if (blockedUsers.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-gray);">Нет заблокированных пользователей</p>';
-                return;
-            }
-            
-            blockedUsers.forEach(async userId => {
-                const user = await db.getUserById(userId);
-                if (!user) return;
+            // Загружаем заблокированных пользователей
+            db.getBlockedUsers(currentUser.id).then(async blockedUserIds => {
+                if (blockedUserIds.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-gray);">Нет заблокированных пользователей</p>';
+                    return;
+                }
                 
-                const blockedUserElement = document.createElement('div');
-                blockedUserElement.className = 'blocked-user';
-                blockedUserElement.innerHTML = `
-                    <div class="blocked-user-info">
-                        <div class="blocked-user-avatar">${user.avatar}</div>
-                        <div class="blocked-user-name">${user.username}</div>
-                    </div>
-                    <button class="unblock-btn" data-user-id="${userId}">Разблокировать</button>
-                `;
-                
-                container.appendChild(blockedUserElement);
-                
-                // Обработчик для кнопки разблокировки
-                blockedUserElement.querySelector('.unblock-btn').addEventListener('click', function() {
-                    unblockUser(userId);
-                });
+                for (const userId of blockedUserIds) {
+                    const user = await db.getUserById(userId);
+                    if (!user) continue;
+                    
+                    const blockedUserElement = document.createElement('div');
+                    blockedUserElement.className = 'blocked-user';
+                    blockedUserElement.innerHTML = `
+                        <div class="blocked-user-info">
+                            <div class="blocked-user-avatar">${user.avatar}</div>
+                            <div class="blocked-user-name">${user.username}</div>
+                        </div>
+                        <button class="unblock-btn" data-user-id="${userId}">Разблокировать</button>
+                    `;
+                    
+                    container.appendChild(blockedUserElement);
+                    
+                    // Обработчик для кнопки разблокировки
+                    blockedUserElement.querySelector('.unblock-btn').addEventListener('click', function() {
+                        unblockUser(userId);
+                    });
+                }
             });
         }
 
@@ -5160,27 +5569,27 @@
                 return;
             }
             
-            users.forEach(user => {
+            users.forEach(async user => {
                 // Проверка на блокировку
-                const isBlocked = db.isUserBlocked(currentUser.id, user.id);
+                const isBlocked = await db.isUserBlocked(currentUser.id, user.id);
                 
                 let avatarContent = isBlocked ? '?' : user.avatar;
                 let avatarStyle = '';
-                if (!isBlocked && user.customAvatar) {
+                if (!isBlocked && user.custom_avatar) {
                     avatarContent = '';
-                    avatarStyle = `background-image: url(${user.customAvatar})`;
+                    avatarStyle = `background-image: url(${user.custom_avatar})`;
                 }
                 
                 const userItem = document.createElement('div');
                 userItem.className = 'chat-item';
                 userItem.innerHTML = `
-                    <div class="avatar ${isBlocked ? 'offline' : (isUserOnline(user.lastSeen) ? user.status || 'online' : 'offline')}" style="${avatarStyle}">${avatarContent}</div>
+                    <div class="avatar ${isBlocked ? 'offline' : (isUserOnline(user.last_seen) ? user.status || 'online' : 'offline')}" style="${avatarStyle}">${avatarContent}</div>
                     <div class="chat-info">
                         <div class="chat-name">
                             ${isBlocked ? 'Заблокированный пользователь' : user.username}
                         </div>
                         <div class="last-message">
-                            ${isBlocked ? 'Пользователь заблокирован' : (isUserOnline(user.lastSeen) ? 'онлайн' : `был(а) ${formatLastSeen(user.lastSeen)}`)}
+                            ${isBlocked ? 'Пользователь заблокирован' : (isUserOnline(user.last_seen) ? 'онлайн' : `был(а) ${formatLastSeen(user.last_seen)}`)}
                         </div>
                     </div>
                     <div class="unread-badge">Чат</div>
@@ -5205,13 +5614,14 @@
                 chat = {
                     id: 'chat_' + Date.now(),
                     participants: [currentUser.id, userId],
-                    participantNames: {
+                    participant_names: {
                         [currentUser.id]: currentUser.username,
                         [userId]: otherUser.username
                     },
-                    lastMessage: '',
-                    lastMessageTime: new Date().toISOString(),
-                    isGroup: false
+                    last_message: '',
+                    last_message_time: new Date().toISOString(),
+                    is_group: false,
+                    created_at: new Date().toISOString()
                 };
                 await db.addChat(chat);
             }
@@ -5224,11 +5634,11 @@
             currentChat = chatId;
             const chat = await db.getChat(chatId);
             
-            if (chat.isGroup) {
+            if (chat.is_group) {
                 // Для групповых чатов
                 document.getElementById('current-chat-avatar').innerHTML = '<i class="fas fa-users"></i>';
                 document.getElementById('current-chat-avatar').style.background = 'var(--accent-purple)';
-                document.getElementById('current-chat-name').textContent = chat.groupInfo.name;
+                document.getElementById('current-chat-name').textContent = chat.group_info.name;
                 document.getElementById('current-chat-status').textContent = 'Групповой чат';
             } else {
                 // Для личных чатов
@@ -5236,24 +5646,24 @@
                 const otherUser = await db.getUserById(otherUserId);
                 
                 // Проверка на блокировку
-                const isBlocked = db.isUserBlocked(currentUser.id, otherUserId);
+                const isBlocked = await db.isUserBlocked(currentUser.id, otherUserId);
                 
                 let avatarContent = isBlocked ? '?' : otherUser.avatar;
                 let avatarStyle = '';
-                if (!isBlocked && otherUser.customAvatar) {
+                if (!isBlocked && otherUser.custom_avatar) {
                     avatarContent = '';
-                    avatarStyle = `background-image: url(${otherUser.customAvatar})`;
+                    avatarStyle = `background-image: url(${otherUser.custom_avatar})`;
                 }
                 
                 document.getElementById('current-chat-avatar').style = avatarStyle;
                 document.getElementById('current-chat-avatar').textContent = avatarContent;
-                document.getElementById('current-chat-avatar').className = `avatar ${isBlocked ? 'offline' : (isUserOnline(otherUser.lastSeen) ? otherUser.status || 'online' : 'offline')}`;
+                document.getElementById('current-chat-avatar').className = `avatar ${isBlocked ? 'offline' : (isUserOnline(otherUser.last_seen) ? otherUser.status || 'online' : 'offline')}`;
                 document.getElementById('current-chat-name').textContent = isBlocked ? 'Заблокированный пользователь' : otherUser.username;
                 
                 const statusText = isBlocked ? 'Пользователь заблокирован' : 
-                    (isUserOnline(otherUser.lastSeen) ? 
+                    (isUserOnline(otherUser.last_seen) ? 
                         `<span class="status-dot"></span> ${otherUser.status === 'online' ? 'онлайн' : otherUser.status === 'idle' ? 'не активен' : otherUser.status === 'dnd' ? 'не беспокоить' : 'не в сети'}` : 
-                        `был(а) ${formatLastSeen(otherUser.lastSeen)}`);
+                        `был(а) ${formatLastSeen(otherUser.last_seen)}`);
                 document.getElementById('current-chat-status').innerHTML = statusText;
             }
             
@@ -5283,7 +5693,7 @@
             
             // Объединяем сообщения и голосовые сообщения и сортируем по времени
             const allMessages = [...messages, ...voiceMessages];
-            allMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            allMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
             
             allMessages.forEach(message => {
                 if (message.type === 'voice') {
@@ -5298,10 +5708,10 @@
 
         function addMessageToChat(message, animate = true) {
             const container = document.getElementById('chat-messages');
-            const isSent = message.senderId === currentUser.id;
+            const isSent = message.sender_id === currentUser.id;
             
             const messageElement = document.createElement('div');
-            messageElement.className = `message ${isSent ? 'sent' : 'received'} ${message.pinned ? 'pinned' : ''} ${message.replyTo ? 'reply' : ''} ${message.uploading ? 'uploading' : ''}`;
+            messageElement.className = `message ${isSent ? 'sent' : 'received'} ${message.pinned ? 'pinned' : ''} ${message.reply_to ? 'reply' : ''} ${message.uploading ? 'uploading' : ''}`;
             messageElement.dataset.messageId = message.id;
             
             // Добавляем обработчик контекстного меню
@@ -5309,7 +5719,7 @@
                 showMessageContextMenu(e, message);
             });
             
-            const time = new Date(message.timestamp).toLocaleTimeString('ru-RU', {
+            const time = new Date(message.created_at).toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -5317,12 +5727,12 @@
             let messageContent = message.text;
             
             // Добавляем индикатор ответа, если есть
-            if (message.replyTo) {
-                const repliedMessage = getMessageById(message.replyTo);
+            if (message.reply_to) {
+                const repliedMessage = getMessageById(message.reply_to);
                 if (repliedMessage) {
                     messageContent = `
                         <div class="reply-indicator">
-                            <div class="reply-sender">${repliedMessage.senderId === currentUser.id ? 'Вы' : repliedMessage.senderName}</div>
+                            <div class="reply-sender">${repliedMessage.sender_id === currentUser.id ? 'Вы' : repliedMessage.sender_name}</div>
                             <div>${repliedMessage.text || 'Сообщение'}</div>
                         </div>
                         ${messageContent}
@@ -5377,7 +5787,7 @@
 
         function addVoiceMessageToChat(voiceMessage, animate = true) {
             const container = document.getElementById('chat-messages');
-            const isSent = voiceMessage.senderId === currentUser.id;
+            const isSent = voiceMessage.sender_id === currentUser.id;
             
             const messageElement = document.createElement('div');
             messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
@@ -5388,7 +5798,7 @@
                 showMessageContextMenu(e, voiceMessage);
             });
             
-            const time = new Date(voiceMessage.timestamp).toLocaleTimeString('ru-RU', {
+            const time = new Date(voiceMessage.created_at).toLocaleTimeString('ru-RU', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -5431,8 +5841,9 @@
         }
 
         function getMessageById(messageId) {
-            const messages = db.getMessages();
-            return messages.find(msg => msg.id === messageId);
+            // В реальном приложении здесь будет запрос к базе данных
+            // Для демонстрации возвращаем null
+            return null;
         }
 
         function replyToMessage(messageId) {
@@ -5440,7 +5851,7 @@
             if (!message) return;
             
             replyingToMessage = message;
-            document.getElementById('message-input').placeholder = `Ответ на сообщение ${message.senderId === currentUser.id ? 'вам' : message.senderName}...`;
+            document.getElementById('message-input').placeholder = `Ответ на сообщение ${message.sender_id === currentUser.id ? 'вам' : message.sender_name}...`;
             document.getElementById('message-input').focus();
             
             // Показываем индикатор ответа
@@ -5464,7 +5875,7 @@
             indicator.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <div class="reply-sender">Ответ на сообщение ${message.senderId === currentUser.id ? 'вам' : message.senderName}</div>
+                        <div class="reply-sender">Ответ на сообщение ${message.sender_id === currentUser.id ? 'вам' : message.sender_name}</div>
                         <div>${message.text || 'Сообщение'}</div>
                     </div>
                     <button class="message-action" onclick="cancelReply()" style="background: none; border: none; color: var(--text-gray); cursor: pointer;">
@@ -5507,12 +5918,12 @@
             
             const message = {
                 id: 'msg_' + Date.now(),
-                chatId: currentChat,
-                senderId: currentUser.id,
-                senderName: currentUser.username,
+                chat_id: currentChat,
+                sender_id: currentUser.id,
+                sender_name: currentUser.username,
                 text: text,
-                timestamp: new Date().toISOString(),
-                replyTo: replyingToMessage ? replyingToMessage.id : null
+                reply_to: replyingToMessage ? replyingToMessage.id : null,
+                created_at: new Date().toISOString()
             };
             
             // Если есть файлы для отправки
@@ -5546,8 +5957,8 @@
             }
             
             await db.updateChat(currentChat, {
-                lastMessage: text || 'Файл',
-                lastMessageTime: new Date().toISOString()
+                last_message: text || 'Файл',
+                last_message_time: new Date().toISOString()
             });
             
             input.value = '';
@@ -5651,7 +6062,7 @@
             let previewContent = '';
             if (file.type.startsWith('image/')) {
                 previewContent = `
-                    <img src="" alt="${file.name}">
+                    <img src="${URL.createObjectURL(file)}" alt="${file.name}">
                 `;
             } else {
                 previewContent = `
@@ -5764,14 +6175,14 @@
                 // Создаем голосовое сообщение
                 const voiceMessage = {
                     id: 'voice_' + Date.now(),
-                    chatId: currentChat,
-                    senderId: currentUser.id,
-                    senderName: currentUser.username,
+                    chat_id: currentChat,
+                    sender_id: currentUser.id,
+                    sender_name: currentUser.username,
                     type: 'voice',
-                    audioUrl: audioUrl,
+                    audio_url: audioUrl,
                     duration: duration,
                     waveform: generateWaveformData(50),
-                    timestamp: new Date().toISOString()
+                    created_at: new Date().toISOString()
                 };
                 
                 // Сохраняем голосовое сообщение
@@ -5782,8 +6193,8 @@
                 
                 // Обновляем чат
                 await db.updateChat(currentChat, {
-                    lastMessage: 'Голосовое сообщение',
-                    lastMessageTime: new Date().toISOString()
+                    last_message: 'Голосовое сообщение',
+                    last_message_time: new Date().toISOString()
                 });
                 
                 await loadUserChats();
@@ -5857,33 +6268,8 @@
         }
 
         function playVoiceMessage(voiceMessageId) {
-            const voiceMessages = db.getVoiceMessages();
-            const voiceMessage = voiceMessages.find(msg => msg.id === voiceMessageId);
-            
-            if (!voiceMessage) return;
-            
-            // Создаем аудио элемент
-            const audio = new Audio(voiceMessage.audioUrl);
-            
-            // Устанавливаем скорость воспроизведения
-            const speedSelector = document.querySelector(`[data-voice-message-id="${voiceMessageId}"] .voice-speed-selector`);
-            if (speedSelector) {
-                audio.playbackRate = parseFloat(speedSelector.value);
-            }
-            
-            // Воспроизводим
-            audio.play();
-            
-            // Обновляем кнопку воспроизведения
-            const playBtn = document.querySelector(`[data-voice-message-id="${voiceMessageId}"] .voice-play-btn`);
-            if (playBtn) {
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                
-                // Возвращаем кнопку в исходное состояние после завершения воспроизведения
-                audio.onended = function() {
-                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                };
-            }
+            // В реальном приложении здесь будет логика воспроизведения голосового сообщения
+            showNotification('Воспроизведение голосового сообщения', 'info');
         }
 
         function changePlaybackSpeed(voiceMessageId, speed) {
@@ -5941,10 +6327,9 @@
                 
                 // Устанавливаем информацию о пользователе
                 const chat = db.getChat(currentChat);
-                if (chat && !chat.isGroup) {
+                if (chat && !chat.is_group) {
                     const otherUserId = chat.participants.find(id => id !== currentUser.id);
                     const otherUser = db.getUserById(otherUserId);
-                    
                     if (otherUser) {
                         document.getElementById('call-user-avatar').textContent = otherUser.avatar;
                         document.getElementById('call-user-name').textContent = otherUser.username;
@@ -5956,61 +6341,41 @@
         function startCallTimer() {
             callStartTime = Date.now();
             callTimer = setInterval(() => {
-                const elapsedSeconds = Math.floor((Date.now() - callStartTime) / 1000);
-                const timerElements = document.querySelectorAll('.call-timer');
-                timerElements.forEach(el => {
-                    el.textContent = formatTime(elapsedSeconds);
-                });
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                document.getElementById('call-timer').textContent = formatTime(elapsed);
             }, 1000);
         }
 
         function endCall() {
-            // Останавливаем таймер
-            if (callTimer) {
-                clearInterval(callTimer);
-                callTimer = null;
-            }
-            
-            // Останавливаем медиапотоки
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
             
-            // Скрываем интерфейс звонка
-            callContainer.style.display = 'none';
+            if (callTimer) {
+                clearInterval(callTimer);
+                callTimer = null;
+            }
             
-            // Сбрасываем состояние
+            callContainer.style.display = 'none';
             isInCall = false;
-            isVideoCall = false;
-            isAudioMuted = false;
-            isVideoMuted = false;
             
             showNotification('Звонок завершен', 'info');
         }
 
         function acceptCall() {
-            // В реальном приложении здесь будет логика принятия звонка через WebRTC
-            isInCall = true;
-            
-            // Скрываем уведомление о входящем звонке
+            // В реальном приложении здесь будет логика принятия звонка
             incomingCallNotification.style.display = 'none';
-            
-            // Показываем интерфейс звонка
+            setupCallInterface(isVideoCall);
             callContainer.style.display = 'flex';
-            
-            // Запускаем таймер
             startCallTimer();
-            
-            showNotification('Звонок принят', 'success');
+            isInCall = true;
         }
 
         function declineCall() {
-            // В реальном приложении здесь будет логика отклонения звонка через WebRTC
-            
-            // Скрываем уведомление о входящем звонке
+            // В реальном приложении здесь будет логика отклонения звонка
             incomingCallNotification.style.display = 'none';
-            
+            callContainer.style.display = 'none';
             showNotification('Звонок отклонен', 'info');
         }
 
@@ -6024,24 +6389,16 @@
                     track.enabled = !isAudioMuted;
                 });
                 
-                // Обновляем иконку кнопки
                 const audioBtn = document.getElementById('audio-toggle-btn');
-                const audioCallBtn = document.getElementById('audio-call-toggle-btn');
-                
-                if (audioBtn) {
-                    audioBtn.innerHTML = isAudioMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-                }
-                
-                if (audioCallBtn) {
-                    audioCallBtn.innerHTML = isAudioMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-                }
+                audioBtn.innerHTML = isAudioMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+                audioBtn.title = isAudioMuted ? 'Включить микрофон' : 'Выключить микрофон';
                 
                 showNotification(isAudioMuted ? 'Микрофон выключен' : 'Микрофон включен', 'info');
             }
         }
 
         function toggleVideo() {
-            if (!localStream || !isVideoCall) return;
+            if (!localStream) return;
             
             const videoTracks = localStream.getVideoTracks();
             if (videoTracks.length > 0) {
@@ -6050,14 +6407,26 @@
                     track.enabled = !isVideoMuted;
                 });
                 
-                // Обновляем иконку кнопки
                 const videoBtn = document.getElementById('video-toggle-btn');
-                if (videoBtn) {
-                    videoBtn.innerHTML = isVideoMuted ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
-                }
+                videoBtn.innerHTML = isVideoMuted ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>';
+                videoBtn.title = isVideoMuted ? 'Включить видео' : 'Выключить видео';
                 
-                showNotification(isVideoMuted ? 'Камера выключена' : 'Камера включена', 'info');
+                showNotification(isVideoMuted ? 'Видео выключено' : 'Видео включено', 'info');
             }
+        }
+
+        // Функция для обновления онлайн статуса
+        function startOnlineUpdates() {
+            if (!currentUser) return;
+            
+            // Обновляем статус каждые 30 секунд
+            updateInterval = setInterval(async () => {
+                if (currentUser) {
+                    await db.updateUser(currentUser.id, {
+                        last_seen: new Date().toISOString()
+                    });
+                }
+            }, 30000);
         }
 
         // Функция для имитации входящего звонка (для демонстрации)
@@ -6065,17 +6434,16 @@
             if (!currentChat) return;
             
             const chat = db.getChat(currentChat);
-            if (chat && !chat.isGroup) {
+            if (chat && !chat.is_group) {
                 const otherUserId = chat.participants.find(id => id !== currentUser.id);
                 const otherUser = db.getUserById(otherUserId);
                 
                 if (otherUser) {
-                    // Обновляем информацию в уведомлении
                     document.getElementById('notification-call-avatar').textContent = otherUser.avatar;
                     document.getElementById('notification-call-name').textContent = otherUser.username;
-                    document.getElementById('notification-call-type').textContent = 'Входящий звонок';
+                    document.getElementById('incoming-call-avatar').textContent = otherUser.avatar;
+                    document.getElementById('incoming-call-name').textContent = otherUser.username;
                     
-                    // Показываем уведомление
                     incomingCallNotification.style.display = 'flex';
                     
                     // Автоматически скрываем уведомление через 30 секунд
@@ -6088,203 +6456,13 @@
             }
         }
 
-        // Обновление статуса онлайн
-        function startOnlineUpdates() {
-            if (updateInterval) {
-                clearInterval(updateInterval);
-            }
-            
-            updateInterval = setInterval(async () => {
-                if (currentUser) {
-                    await db.updateUser(currentUser.id, {
-                        lastSeen: new Date().toISOString()
-                    });
-                    
-                    if (currentChat) {
-                        const chat = await db.getChat(currentChat);
-                        if (!chat.isGroup) {
-                            const otherUserId = chat.participants.find(id => id !== currentUser.id);
-                            const otherUser = await db.getUserById(otherUserId);
-                            
-                            if (otherUser) {
-                                const isBlocked = db.isUserBlocked(currentUser.id, otherUserId);
-                                const isOnline = !isBlocked && isUserOnline(otherUser.lastSeen);
-                                
-                                let statusText = '';
-                                if (isBlocked) {
-                                    statusText = 'Пользователь заблокирован';
-                                } else if (isOnline) {
-                                    statusText = `<span class="status-dot"></span> ${otherUser.status === 'online' ? 'онлайн' : otherUser.status === 'idle' ? 'не активен' : otherUser.status === 'dnd' ? 'не беспокоить' : 'не в сети'}`;
-                                } else {
-                                    statusText = `был(а) ${formatLastSeen(otherUser.lastSeen)}`;
-                                }
-                                
-                                document.getElementById('current-chat-status').innerHTML = statusText;
-                                document.getElementById('current-chat-avatar').className = `avatar ${isBlocked ? 'offline' : (isOnline ? otherUser.status || 'online' : 'offline')}`;
-                            }
-                        }
-                    }
-                    
-                    await loadUserChats();
-                }
-            }, 30000);
+        // Демонстрационная функция для имитации входящего звонка
+        function demoIncomingCall() {
+            simulateIncomingCall();
         }
 
-        // Демонстрация функций - имитация входящего звонка через 10 секунд после загрузки
-        setTimeout(() => {
-            if (currentUser && currentChat) {
-                simulateIncomingCall();
-            }
-        }, 10000);
-    
-})();
-</script>
-
-<!-- Reactions menu (injected) -->
-<div id="reactions-menu" class="reactions-menu" aria-hidden="true">
-    <span data-reaction="👍" title="Лайк">👍</span>
-    <span data-reaction="❤️" title="Сердечко">❤️</span>
-    <span data-reaction="🔥" title="Огонёк">🔥</span>
-    <span data-reaction="👎" title="Дизлайк">👎</span>
-    <span data-reaction="🤡" title="Клоун">🤡</span>
-</div>
-
-<script>
-// --- Reactions UI logic (injected) ---
-// --- Reactions UI logic (injected) ---
-document.addEventListener('DOMContentLoaded', function() {
-    const reactionsMenu = document.getElementById('reactions-menu');
-    let currentMessageEl = null;
-
-    // store last context menu position so reaction picker can be placed next to it
-    window.lastContextMenuPos = window.lastContextMenuPos || null;
-
-    // helper: find DOM element for message object
-    function getMessageElementByMessage(message) {
-        if (!message) return null;
-        // standard message id
-        if (message.id) {
-            const el = document.querySelector(`[data-message-id="${message.id}"]`);
-            if (el) return el;
-            const v = document.querySelector(`[data-voice-message-id="${message.id}"]`);
-            if (v) return v;
-        }
-        // fallback: try matching by timestamp or text (best-effort)
-        if (message.timestamp) {
-            const nodes = Array.from(document.querySelectorAll('.message'));
-            return nodes.find(n => n.querySelector('.message-time') && n.querySelector('.message-time').innerText.includes(new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}))) || null;
-        }
-        return null;
-    }
-
-    // show reaction picker for a message object (from context menu)
-    window.showReactionPicker = function(message) {
-        const msgEl = getMessageElementByMessage(message);
-        if (!msgEl) {
-            // If we can't find the DOM element, just show at center
-            currentMessageEl = null;
-            reactionsMenu.style.left = (window.innerWidth/2 - reactionsMenu.offsetWidth/2) + 'px';
-            reactionsMenu.style.top = (window.innerHeight/2 - reactionsMenu.offsetHeight/2) + 'px';
-            reactionsMenu.style.display = 'flex';
-            reactionsMenu.setAttribute('aria-hidden','false');
-            return;
-        }
-
-        currentMessageEl = msgEl;
-        // ensure reaction-list exists
-        if (!currentMessageEl.querySelector('.reaction-list')) {
-            const rl = document.createElement('div');
-            rl.className = 'reaction-list';
-            // insert after message content (at end)
-            currentMessageEl.appendChild(rl);
-        }
-
-        // position picker near the context menu if available, otherwise near message
-        if (window.lastContextMenuPos) {
-            const pos = window.lastContextMenuPos;
-            // place to the right of context menu if fits, otherwise above it
-            let left = pos.x + pos.width + 8;
-            if (left + reactionsMenu.offsetWidth > window.innerWidth) {
-                left = Math.max(8, pos.x - reactionsMenu.offsetWidth - 8);
-            }
-            let top = pos.y;
-            if (top + reactionsMenu.offsetHeight > window.innerHeight) {
-                top = Math.max(8, window.innerHeight - reactionsMenu.offsetHeight - 8);
-            }
-            reactionsMenu.style.left = left + 'px';
-            reactionsMenu.style.top = top + 'px';
-        } else {
-            const rect = currentMessageEl.getBoundingClientRect();
-            let left = rect.right + 8;
-            if (left + reactionsMenu.offsetWidth > window.innerWidth) {
-                left = Math.max(8, rect.left - reactionsMenu.offsetWidth - 8);
-            }
-            let top = rect.top;
-            reactionsMenu.style.left = left + 'px';
-            reactionsMenu.style.top = top + 'px';
-        }
-
-        reactionsMenu.style.display = 'flex';
-        reactionsMenu.setAttribute('aria-hidden','false');
-    };
-
-    // toggle reaction on the current message element
-    function toggleReactionOnMessage(msgEl, reaction) {
-        if (!msgEl) return;
-        let rl = msgEl.querySelector('.reaction-list');
-        if (!rl) {
-            rl = document.createElement('div');
-            rl.className = 'reaction-list';
-            msgEl.appendChild(rl);
-        }
-        const existing = rl.querySelector(`[data-r="${reaction}"]`);
-        if (existing) {
-            // toggle off
-            existing.remove();
-        } else {
-            // add reaction element (single-user reaction, no count)
-            const item = document.createElement('span');
-            item.className = 'reaction-item';
-            item.dataset.r = reaction;
-            item.innerText = reaction;
-            // allow manual removal by clicking the reaction itself
-            item.addEventListener('click', function(ev){
-                ev.stopPropagation();
-                item.remove();
-            });
-            rl.appendChild(item);
-        }
-    }
-
-    // click outside -> hide
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('#reactions-menu') && !e.target.closest('.message-context-menu') && !e.target.closest('.message-action')) {
-            reactionsMenu.style.display = 'none';
-            reactionsMenu.setAttribute('aria-hidden', 'true');
-            // don't clear currentMessageEl to allow quick toggles
-        }
-    });
-
-    reactionsMenu.addEventListener('click', function(e) {
-        const r = e.target.dataset.reaction;
-        if (!r) return;
-        // toggle reaction
-        toggleReactionOnMessage(currentMessageEl, r);
-        // hide picker after selection
-        reactionsMenu.style.display = 'none';
-        reactionsMenu.setAttribute('aria-hidden','true');
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            reactionsMenu.style.display = 'none';
-            reactionsMenu.setAttribute('aria-hidden','true');
-        }
-    });
-});
-// --- end injected reactions script ---
-
-</script>
-
+        // Инициализация завершена
+        console.log('Игнат инициализирован!');
+    </script>
 </body>
 </html>
